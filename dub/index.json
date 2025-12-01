@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Seadex Dubs",
+    "id": "seadex-dub",
+    "version": "0.0.1",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "dub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://releases.moe/favicon.png",
+    "update": "gh:YoJames2019/HJ-ext/dub",
+    "code": "gh:YoJames2019/HJ-ext/dub/seadex"
+  },
+  {
+    "name": "AnimeTosho Dubs",
+    "id": "animetosho-dub",
+    "version": "0.0.2",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "dub",
+    "languages": [
+      "US"
+    ],
+    "icon": "https://animetosho.org/inc/favicon.ico",
+    "update": "gh:YoJames2019/HJ-ext/dub",
+    "code": "gh:YoJames2019/HJ-ext/dub/animetosho"
+  }
+]

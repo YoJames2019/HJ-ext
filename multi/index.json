@@ -1,0 +1,17 @@
+[
+  {
+    "name": "AnimeTosho MultiSub",
+    "id": "animetosho-multi",
+    "version": "0.0.2",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "ALL"
+    ],
+    "icon": "https://animetosho.org/inc/favicon.ico",
+    "update": "gh:YoJames2019/HJ-ext/multi",
+    "code": "gh:YoJames2019/HJ-ext/multi/animetosho"
+  }
+]
