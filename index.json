@@ -12,7 +12,7 @@
     ],
     "icon": "https://releases.moe/favicon.png",
     "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/seadex"
+    "code": "gh:YoJames2019/HJ-ext/seadex.js"
   },
   {
     "name": "AnimeTosho",
