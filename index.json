@@ -44,6 +44,21 @@
     "icon": "https://nekobt.to/cdn/pfp/null/64",
     "update": "gh:YoJames2019/HJ-ext",
     "code": "gh:YoJames2019/HJ-ext/nekobt"
+  },
+  {
+    "name": "Nyaa",
+    "id": "hayase.extension.nyaa",
+    "version": "1.0.2",
+    "type": "torrent",
+    "accuracy": "medium",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "all"
+    ],
+    "nsfw": false,
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "gh:YoJames2019/HJ-ext",
+    "code": "gh:YoJames2019/HJ-ext/nyaasi"
   }
-
 ]
