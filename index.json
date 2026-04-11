@@ -47,7 +47,7 @@
   },
   {
     "name": "Nyaa",
-    "id": "hayase.extension.nyaa",
+    "id": "nyaasi",
     "version": "1.0.2",
     "type": "torrent",
     "accuracy": "medium",
