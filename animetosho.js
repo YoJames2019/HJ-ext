@@ -1,8 +1,7 @@
-import AbstractSource from './abstract.js'
 
 const QUALITIES = ['1080', '720', '540', '480']
 
-export default new class Tosho extends AbstractSource {
+export default new class Tosho {
   url = atob('aHR0cHM6Ly9mZWVkLmFuaW1ldG9zaG8ub3JnL2pzb24=')
 
   buildQuery ({ resolution, exclusions }) {
@@ -14,11 +13,6 @@ export default new class Tosho extends AbstractSource {
     return base + `!(*${excl.join('*|*')}*)`
   }
 
-  /**
-   * @param {import('./types').Tosho[]} entries
-   * @param {boolean} batch
-   * @returns {import('./').TorrentResult[]}
-   **/
   map (entries, batch = false) {
     return entries.map(entry => {
       return {
@@ -36,38 +30,33 @@ export default new class Tosho extends AbstractSource {
     })
   }
 
-  /** @type {import('./').SearchFunction} */
   async single ({ anidbEid, resolution, exclusions }) {
     if (!anidbEid) throw new Error('No anidbEid provided')
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?eid=' + anidbEid + query)
 
-    /** @type {import('./types').Tosho[]} */
     const data = await res.json()
 
     if (data.length) return this.map(data)
     return []
   }
 
-  /** @type {import('./').SearchFunction} */
   async batch ({ anidbAid, resolution, exclusions }) {
     if (!anidbAid) throw new Error('No anidbAid provided')
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?order=size-d&aid=' + anidbAid + query)
 
-    const data = /** @type {import('./types').Tosho[]} */(await res.json()).filter(entry => entry.num_files > 1)
+    const data = (await res.json()).filter(entry => entry.num_files > 1)
 
     if (data.length) return this.map(data, true)
     return []
   }
 
-  /** @type {import('./').SearchFunction} */
   async movie ({ anidbAid, resolution, exclusions }) {
     if (!anidbAid) throw new Error('No anidbAid provided')
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?aid=' + anidbAid + query)
 
-    /** @type {import('./types').Tosho[]} */
     const data = await res.json()
 
     if (data.length) return this.map(data)

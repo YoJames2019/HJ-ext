@@ -9,7 +9,7 @@ function decodeId(encodedId) {
   return { time, type, increment };
 }
 
-export default new (class {
+export default new class NekoBT {
     url = atob("aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==");
 
     async fetchEpisodeFromId({ tvdbId, tmdbId, imdbId }) {
@@ -67,4 +67,4 @@ export default new (class {
             throw new Error(`Could not reach ${this.url}! Does the site work in your region?`);
         }
     }
-})();
+}();
