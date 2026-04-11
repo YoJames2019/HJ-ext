@@ -11,8 +11,8 @@
       "US"
     ],
     "icon": "https://releases.moe/favicon.png",
-    "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/seadex"
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/seadex.js"
   },
   {
     "name": "AnimeTosho",
@@ -26,8 +26,8 @@
       "US"
     ],
     "icon": "https://animetosho.org/inc/favicon.ico",
-    "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/animetosho"
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/animetosho.js"
   },
   {
     "name": "NekoBT",
@@ -42,8 +42,8 @@
     ],
     "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
     "icon": "https://nekobt.to/cdn/pfp/null/64",
-    "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/nekobt"
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nekobt.js"
   },
   {
     "name": "Nyaa",
@@ -58,7 +58,7 @@
     ],
     "nsfw": false,
     "icon": "https://nyaa.si/static/favicon.png",
-    "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/nyaasi"
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nyaasi.js"
   }
 ]
