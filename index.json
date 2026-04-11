@@ -30,45 +30,20 @@
     "code": "gh:YoJames2019/HJ-ext/animetosho"
   },
   {
-    "name": "AnimeTosho",
-    "id": "animetosho-nzb",
+    "name": "NekoBT",
+    "id": "nekobt",
     "version": "0.0.3",
-    "type": "nzb",
+    "type": "torrent",
     "accuracy": "high",
     "ratio": 0,
     "media": "sub",
     "languages": [
       "US"
     ],
-    "icon": "https://animetosho.org/inc/favicon.ico",
+    "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
+    "icon": "https://nekobt.to/cdn/pfp/null/64",
     "update": "gh:YoJames2019/HJ-ext",
-    "code": "gh:YoJames2019/HJ-ext/animetosho-nzb",
-    "options": {
-      "domain": {
-        "type": "string",
-        "description": "Provider Domain",
-        "default": "news.example.com"
-      },
-      "port": {
-        "type": "number",
-        "description": "Provider Port",
-        "default": 119
-      },
-      "username": {
-        "type": "string",
-        "description": "Provider Username",
-        "default": "mail@example.com"
-      },
-      "password": {
-        "type": "string",
-        "description": "Provider Password, this is stored unencrypted on your drive",
-        "default": "password"
-      },
-      "poolSize": {
-        "type": "number",
-        "description": "Connection Pool Size",
-        "default": 5
-      }
-    }
+    "code": "gh:YoJames2019/HJ-ext/nekobt"
   }
+
 ]
