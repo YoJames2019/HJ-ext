@@ -16,7 +16,7 @@ export default new (class {
         const mappingRes = await fetch(
             atob("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1RoYVVua25vd24vYW5pbWUtbGlzdHMtdHMvcmVmcy9oZWFkcy9tYWluL2RhdGEvbmJ0LW1hcHBpbmcuanNvbg==")
         )
-        console.log(`tvdbid: ${tvdbId}, tmdbid: ${tmdbId}, imdbid:${imdbId}`)
+        console.log(`tvdbid: ${tvdbId}, tmdbid: ${tmdbId}, imdbid: ${imdbId}`)
         const mappings = await mappingRes.json()
 
         const nekoID = mappings.tvdb[tvdbId] ?? mappings.tmdb[tmdbId] ?? mappings.imdb[imdbId];
@@ -44,12 +44,13 @@ export default new (class {
             })) ?? []
         );
     }
+
     async single({ tvdbId, tvdbEId, tmdbId, imdbId, episode }, i) {
         if (!navigator.onLine) return [];
         const { data, nekoID } = await this.fetchEpisodeFromId({ tvdbId, tmdbId, imdbId })
-        const episode = data?.episodes?.find((e) => e.tvdbId === tvdbEId) ?? data?.episodes?.find((e) => e.episode === episode);
+        const episodeData = data?.episodes?.find((e) => e.tvdbId === tvdbEId) ?? data?.episodes?.find((e) => e.episode === episode);
         let URL = `${this.url}torrents/search?media_id=${nekoID}&fansub_lang=en%2Cenm&sub_lang=en%2Cenm`;
-        episode?.id && (URL += `&episode_ids=${episode.id}`);
+        episodeData?.id && (URL += `&episode_ids=${episodeData.id}`);
         const res = await fetch(URL)
         
         const json = await res.json();
