@@ -15,37 +15,6 @@
     "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/seadex.js"
   },
   {
-    "name": "AnimeTosho",
-    "id": "animetosho",
-    "version": "0.0.7",
-    "type": "torrent",
-    "accuracy": "high",
-    "ratio": 0,
-    "media": "sub",
-    "languages": [
-      "US"
-    ],
-    "icon": "https://animetosho.org/inc/favicon.ico",
-    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
-    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/animetosho.js"
-  },
-  {
-    "name": "NekoBT",
-    "id": "nekobt",
-    "version": "0.0.4",
-    "type": "torrent",
-    "accuracy": "high",
-    "ratio": 0,
-    "media": "sub",
-    "languages": [
-      "US"
-    ],
-    "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
-    "icon": "https://nekobt.to/cdn/pfp/null/64",
-    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
-    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nekobt.js"
-  },
-  {
     "name": "Nyaa",
     "id": "nyaasiJ",
     "version": "2.0.1",
