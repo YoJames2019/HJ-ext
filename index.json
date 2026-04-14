@@ -48,7 +48,7 @@
   {
     "name": "Nyaa",
     "id": "nyaasi",
-    "version": "1.0.2",
+    "version": "2.0.0",
     "type": "torrent",
     "accuracy": "medium",
     "ratio": 0,
@@ -57,9 +57,20 @@
       "all"
     ],
     "nsfw": false,
-    "url": "aHR0cHM6Ly90b3JyZW50LXNlYXJjaC1hcGktbGl2aWQudmVyY2VsLmFwcC9hcGkv",
     "icon": "https://nyaa.si/static/favicon.png",
     "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
-    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nyaasi.js"
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nyaasi.js",
+    "options": {
+      "apiUrl": {
+        "type": "string",
+        "description": "The base url of the nyaapi instance",
+        "default": ""
+      },
+      "apiKey": {
+        "type": "string",
+        "description": "The API key you use to authenticate with the third party nyaa.si api",
+        "default": ""
+      }
+    }
   }
 ]
