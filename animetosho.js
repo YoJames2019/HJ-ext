@@ -31,7 +31,7 @@ export default new class Tosho {
   }
 
   async single ({ anidbEid, resolution, exclusions }) {
-    if (!anidbEid) throw new Error('No anidbEid provided')
+    if (!anidbEid) return []
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?eid=' + anidbEid + query)
 
@@ -42,7 +42,7 @@ export default new class Tosho {
   }
 
   async batch ({ anidbAid, resolution, exclusions }) {
-    if (!anidbAid) throw new Error('No anidbAid provided')
+    if (!anidbAid) return []
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?order=size-d&aid=' + anidbAid + query)
 
@@ -53,7 +53,7 @@ export default new class Tosho {
   }
 
   async movie ({ anidbAid, resolution, exclusions }) {
-    if (!anidbAid) throw new Error('No anidbAid provided')
+    if (!anidbAid) return []
     const query = this.buildQuery({ resolution, exclusions })
     const res = await fetch(this.url + '?aid=' + anidbAid + query)
 

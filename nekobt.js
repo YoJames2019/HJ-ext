@@ -20,7 +20,7 @@ export default new class NekoBT {
         const mappings = await mappingRes.json()
 
         const nekoID = mappings.tvdb[tvdbId] ?? mappings.tmdb[tmdbId] ?? mappings.imdb[imdbId];
-        if (!nekoID) throw new Error("No NekoBT mapping found for provided anime.");
+        if (!nekoID) throw new Error("No NekoBT mapping found for provided anime.", {});
         const res = await fetch(this.url + `media/${nekoID}`)
         
         const json = await res.json();
@@ -47,9 +47,13 @@ export default new class NekoBT {
 
     async single({ tvdbId, tvdbEId, tmdbId, imdbId, episode }, i) {
         if (!navigator.onLine) return [];
-        const { data, nekoID } = await this.fetchEpisodeFromId({ tvdbId, tmdbId, imdbId })
-        const episodeData = data?.episodes?.find((e) => e.tvdbId === tvdbEId) ?? data?.episodes?.find((e) => e.episode === episode);
-        let URL = `${this.url}torrents/search?media_id=${nekoID}&fansub_lang=en%2Cenm&sub_lang=en%2Cenm`;
+        if (!tvdbId && !tmdbId && imdbId) return []
+        
+        const nekoMapping = await this.fetchEpisodeFromId({ tvdbId, tmdbId, imdbId })
+        if(!nekoMapping) return [];
+
+        const episodeData = nekoMapping.data?.episodes?.find((e) => e.tvdbId === tvdbEId) ?? nekoMapping.data?.episodes?.find((e) => e.episode === episode);
+        let URL = `${this.url}torrents/search?media_id=${nekoMapping.nekoID}&fansub_lang=en%2Cenm&sub_lang=en%2Cenm`;
         episodeData?.id && (URL += `&episode_ids=${episodeData.id}`);
         const res = await fetch(URL)
         
