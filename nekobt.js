@@ -20,7 +20,7 @@ export default new class NekoBT {
         const mappings = await mappingRes.json()
 
         const nekoID = mappings.tvdb[tvdbId] ?? mappings.tmdb[tmdbId] ?? mappings.imdb[imdbId];
-        if (!nekoID) throw new Error("No NekoBT mapping found for provided anime.", {});
+        if (!nekoID) return {};
         const res = await fetch(this.url + `media/${nekoID}`)
         
         const json = await res.json();
@@ -48,7 +48,7 @@ export default new class NekoBT {
     async single({ tvdbId, tvdbEId, tmdbId, imdbId, episode }, i) {
         if (!navigator.onLine) return [];
         if (!tvdbId && !tmdbId && imdbId) return []
-        
+
         const nekoMapping = await this.fetchEpisodeFromId({ tvdbId, tmdbId, imdbId })
         if(!nekoMapping) return [];
 
