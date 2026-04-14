@@ -31,7 +31,7 @@ export default new class ApiClient {
 
       return []
     };
-    
+
     const data = await res.json()
 
     if (!Array.isArray(data)) return []
@@ -43,7 +43,7 @@ export default new class ApiClient {
   movie = this.single
 
   buildSearchQuery(title, episode) {
-    let query = title.replace(/[^\w\s-]/g, ' ').trim()
+    let query = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()
     if (episode) query += ` ${episode.toString().padStart(2, '0')}`
     return query
   }
