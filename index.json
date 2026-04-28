@@ -33,7 +33,7 @@
   {
     "name": "Nyaa",
     "id": "nyaasiJ",
-    "version": "2.0.1",
+    "version": "2.0.3",
     "type": "torrent",
     "accuracy": "medium",
     "ratio": 0,
@@ -55,6 +55,11 @@
         "type": "string",
         "description": "The API key you use to authenticate with the third party nyaa.si api",
         "default": ""
+      },
+      "resultsLimit": {
+        "type": "number",
+        "description": "The number of results you want the api to return",
+        "default": 5
       }
     }
   }

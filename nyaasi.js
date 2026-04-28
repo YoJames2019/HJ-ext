@@ -18,7 +18,7 @@ export default new class ApiClient {
     const res = await fetch(`${options.apiUrl}/api/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ term: query }),
+      body: JSON.stringify({ term: query, pageSize: options.resultsLimit ?? 10 }),
     });
 
     if (!res.ok) {
