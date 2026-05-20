@@ -19,7 +19,7 @@ export default new class NekoBT {
     if(tmdbId) mediaParams.append("tmdbid", tmdbId);
 
     const mappings = await this._fetch(fetch, mediaParams);
-    if (!mappings?.media) throw new Error("NekoBT: No media found for the given anime!");
+    if (!mappings?.media) return []
 
     const ep = mappings.media.episodes?.find(ep => ep.tvdbId === tvdbEId) ?? mappings.media.episodes?.find(ep => ep.episode === episode), searchParams = new URLSearchParams({
       media_id: mappings.media.id,
