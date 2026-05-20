@@ -21,7 +21,7 @@ export default new class NekoBT {
 
         const nekoID = mappings.tvdb[tvdbId] ?? mappings.tmdb[tmdbId] ?? mappings.imdb[imdbId];
         if (!nekoID) return {};
-        const res = await fetch(this.url + `media/${nekoID}`)
+        const res = await fetch(`${this.url}media/${nekoID}`)
         
         const json = await res.json();
         if (json.error) throw new Error("NekoBT: " + json.message);
@@ -32,7 +32,7 @@ export default new class NekoBT {
         return (
             res?.data?.results?.map((result) => ({
                 title: result.title,
-                link: `https://nekobt.to/api/v1/torrents/${result.id}/download?public=true`,
+                link: `${this.url}torrents/${result.id}/download?public=true`,
                 seeders: Number(result.seeders),
                 leechers: Number(result.leechers),
                 downloads: Number(result.completed),
