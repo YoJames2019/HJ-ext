@@ -1,5 +1,6 @@
 [
   {
+    "manifestVersion": 2,
     "name": "Seadex",
     "id": "seadex",
     "version": "0.0.2",
@@ -15,6 +16,7 @@
     "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/seadex.js"
   },
   {
+    "manifestVersion": 2,
     "name": "NekoBT",
     "id": "nekobt",
     "version": "1.0.0",
@@ -31,6 +33,7 @@
     "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nekobt.js"
   },
   {
+    "manifestVersion": 2,
     "name": "Nyaa",
     "id": "nyaasiJ",
     "version": "2.0.3",
@@ -39,7 +42,7 @@
     "ratio": 0,
     "media": "sub",
     "languages": [
-      "all"
+      "US"
     ],
     "nsfw": false,
     "icon": "https://nyaa.si/static/favicon.png",
