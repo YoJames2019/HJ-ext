@@ -43,8 +43,8 @@ export default new class ApiClient {
   movie = this.single
 
   buildSearchQuery(title, episode) {
-    let query = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()
-    if (episode) query += ` ${episode.toString().padStart(2, '0')}`
+    let query = `"${title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()}"`
+    if (episode) query += ` "${episode.toString().padStart(2, '0')}"`
     return query
   }
 
