@@ -59,7 +59,7 @@ export default new class ApiClient {
       hash: item.hash || '',
       size: item.filesize,
       date: new Date(item.date),
-      type: /((\[|\()(batch|bd)|batch|bdrip)/i.test(item.name) ? "batch" : "alt"
+      type: /((\[|\()(batch|bd)|batch|bdrip)/i.test(item.name) ? "batch" : null
     }))
   }
   
