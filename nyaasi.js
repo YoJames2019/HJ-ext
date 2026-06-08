@@ -10,7 +10,7 @@ export default new class ApiClient {
 
     let data = await this.fetchData(query, options)
 
-    if(options.useStrictSearchFirst && !data.length < 0) {
+    if(options.useStrictSearchFirst && data.length < 0) {
       query = this.buildSearchQuery(titles[0], episode)
       data = await this.fetchData(query, options)
     }
