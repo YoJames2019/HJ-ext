@@ -6,7 +6,18 @@ export default new class ApiClient {
 
     if (!titles?.length) return []
 
-    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst)
+    let results = this.findTorrentResults(titles, episode, options)
+
+    if (!results) 
+
+    return results
+  }
+
+  batch = this.single
+  movie = this.single
+
+  async findTorrentResults(titles, episode, options, alt = false){
+    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst, alt)
 
     let data = await this.fetchData(query, options, options.useStrictSearchFirst)
 
@@ -17,9 +28,6 @@ export default new class ApiClient {
 
     return this.map(data)
   }
-
-  batch = this.single
-  movie = this.single
 
   async fetchData(query, options, strict = false) {
     const headers = {
@@ -54,16 +62,45 @@ export default new class ApiClient {
     return { results: data, strict }
   }
   
-  buildSearchQuery(title, episode, strict = false) {
-    const parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').replace(/Season\s+(\d+)/i, 'S$1').trim();
-    const parsedEpisode = episode.toString().padStart(2, '0');
+  buildSearchQuery(title, episode, strict = false, alt = false) {
+    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim();
+    let parsedEpisode = episode.toString().padStart(2, '0');
+    
+    // find season number
+    let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
+    
+    let finalTitle = strippedTitle
 
-    let query = `"${parsedTitle}"`;
-    if (episode) query += ` - "${parsedEpisode} "`;
+    let query = `"${finalTitle}"`;
+    if (episode) query += ` "${seasonText}${alt ? ` - ` : ``}${parsedEpisode} "`;
 
     if(strict) query = `"${query.replaceAll('"', "")}"`;
 
     return query;
+  }
+
+  stripSeason(input) {
+      let match1 = input.match(regex1);
+      let match2 = input.match(regex2);
+
+      let seasonNumber = null;
+      let strippedTitle = input;
+
+      if (match1) {
+          // If the first pattern matches, we take the number and remove that specific instance
+          seasonNumber = match1[1];
+          strippedTitle = input.replace(regex1, "").trim();
+      } else if (match2) {
+          // If the second fails but the second succeeds, we do the same for the second pattern
+          seasonNumber = match2[1];
+          strippedTitle = input.replace(regex2, "").trim();
+      }
+
+      return {
+          seasonText: seasonNumber ? `S${seasonNumber}` : "",
+          seasonNumber,
+          strippedTitle
+      };
   }
 
   map(data) {
