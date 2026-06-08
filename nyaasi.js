@@ -6,7 +6,22 @@ export default new class ApiClient {
 
     if (!titles?.length) return []
 
-    const query = this.buildSearchQuery(titles[0], episode)
+    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst)
+
+    let data = await this.fetchData(query, options)
+
+    if(options.useStrictSearchFirst && !data.length < 0) {
+      query = this.buildSearchQuery(titles[0], episode)
+      data = await this.fetchData(query, options)
+    }
+
+    return this.map(data)
+  }
+
+  batch = this.single
+  movie = this.single
+
+  async fetchData(query, options) {
     const headers = {
       "Content-Type": "application/json",
     }
@@ -36,15 +51,18 @@ export default new class ApiClient {
 
     if (!Array.isArray(data)) return []
 
-    return this.map(data)
+    return data
   }
+  
+  buildSearchQuery(title, episode, strict = false) {
+    const parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()
+    const parsedEpisode = episode.toString().padStart(2, '0')
 
-  batch = this.single
-  movie = this.single
+    let query = `"${parsedTitle}"`
+    if (episode) query += ` "${parsedEpisode} "`
 
-  buildSearchQuery(title, episode) {
-    let query = `"${title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()}"`
-    if (episode) query += ` "${episode.toString().padStart(2, '0')} "`
+    if(strict) query = `"${query.replaceAll('"', "")}"`
+
     return query
   }
 

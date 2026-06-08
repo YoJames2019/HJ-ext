@@ -36,7 +36,7 @@
     "manifestVersion": 2,
     "name": "Nyaa",
     "id": "nyaasiJ",
-    "version": "2.0.7",
+    "version": "2.0.8",
     "type": "torrent",
     "accuracy": "medium",
     "ratio": 0,
@@ -63,6 +63,11 @@
         "type": "number",
         "description": "The number of results you want the api to return",
         "default": 5
+      },
+      "useStrictSearchFirst": {
+        "type": "boolean",
+        "description": "Improves result accuracy at the cost of possible slow backup results if strict search returns nothing",
+        "default": true
       }
     }
   }
