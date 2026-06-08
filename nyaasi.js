@@ -26,7 +26,7 @@ export default new class ApiClient {
       data = await this.fetchData(query, options)
     }
 
-    return this.map(data, query)
+    return this.map(data)
   }
 
   async fetchData(query, options, strict = false) {
@@ -113,9 +113,9 @@ export default new class ApiClient {
       };
   }
 
-  map(data, query) {
+  map(data) {
     return data.results.map(item => ({
-      title: `(${query}) ${item.name}` || '',
+      title: item.name || '',
       link: item.magnet || '',
       seeders: parseInt(item.seeders || '0'),
       leechers: parseInt(item.leechers || '0'),
