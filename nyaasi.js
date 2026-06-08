@@ -71,7 +71,12 @@ export default new class ApiClient {
     let finalTitle = strippedTitle
 
     let query = `"${finalTitle}"`;
-    if (episode) query += `"${seasonText || " "}${alt ? ` - ` : ``}${parsedEpisode} "`;
+
+    // S1 main: "Tsue to Tsurugi no Wistoria" "- 01 "
+    // S1 alt: "Tsue to Tsurugi no Wistoria" "01 "
+    // S2 main: "Tsue to Tsurugi no Wistoria" "S2 - 01 "
+    // S2 alt: "Tsue to Tsurugi no Wistoria" "S201 "
+    if (episode) query += ` "${seasonText}${alt ? `` : ` - `}${parsedEpisode} "`;
 
     if(strict) query = `"${query.replaceAll('"', "")}"`;
 
