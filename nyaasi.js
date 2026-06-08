@@ -8,9 +8,9 @@ export default new class ApiClient {
 
     let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst)
 
-    let data = await this.fetchData(query, options)
+    let data = await this.fetchData(query, options, options.useStrictSearchFirst)
 
-    if(options.useStrictSearchFirst && data.length < 1) {
+    if(options.useStrictSearchFirst && data.results.length < 1) {
       query = this.buildSearchQuery(titles[0], episode)
       data = await this.fetchData(query, options)
     }
@@ -21,7 +21,7 @@ export default new class ApiClient {
   batch = this.single
   movie = this.single
 
-  async fetchData(query, options) {
+  async fetchData(query, options, strict = false) {
     const headers = {
       "Content-Type": "application/json",
     }
@@ -44,14 +44,14 @@ export default new class ApiClient {
         throw new Error("You cannot access this api without authorization! If you have an API key, make sure to put it in the extension settings!")
       }
 
-      return []
+      return { results: [], strict }
     };
 
     const data = await res.json()
 
-    if (!Array.isArray(data)) return []
+    if (!Array.isArray(data)) return { results: [], strict }
 
-    return data
+    return { results: data, strict }
   }
   
   buildSearchQuery(title, episode, strict = false) {
@@ -67,13 +67,13 @@ export default new class ApiClient {
   }
 
   map(data) {
-    return data.map(item => ({
+    return data.results.map(item => ({
       title: item.name || '',
       link: item.magnet || '',
       seeders: parseInt(item.seeders || '0'),
       leechers: parseInt(item.leechers || '0'),
       downloads: parseInt(item.completed || '0'),
-      accuracy: 'medium',
+      accuracy: data.strict ? 'high' : 'medium',
       hash: item.hash || '',
       size: item.filesize,
       date: new Date(item.date),
