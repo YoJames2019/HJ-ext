@@ -71,7 +71,7 @@ export default new class ApiClient {
     let finalTitle = strippedTitle
 
     let query = `"${finalTitle}"`;
-    if (episode) query += ` "${seasonText}${alt ? ` - ` : ``}${parsedEpisode} "`;
+    if (episode) query += `"${seasonText || " "}${alt ? ` - ` : ``}${parsedEpisode} "`;
 
     if(strict) query = `"${query.replaceAll('"', "")}"`;
 
