@@ -36,7 +36,7 @@
     "manifestVersion": 2,
     "name": "Nyaa",
     "id": "nyaasiJ",
-    "version": "2.0.11",
+    "version": "2.0.12",
     "type": "torrent",
     "accuracy": "medium",
     "ratio": 0,
@@ -51,22 +51,22 @@
     "options": {
       "apiUrl": {
         "type": "string",
-        "description": "The base url of the nyaapi instance",
+        "description": "Nyaapi instance url",
         "default": ""
       },
       "apiKey": {
         "type": "string",
-        "description": "The API key you use to authenticate with the third party nyaa.si api",
+        "description": "API Key",
         "default": ""
       },
       "resultsLimit": {
         "type": "number",
-        "description": "The number of results you want the api to return",
+        "description": "Number of results to show",
         "default": 5
       },
       "useStrictSearchFirst": {
         "type": "boolean",
-        "description": "Improves result accuracy at the cost of possible slow backup results if strict search returns nothing",
+        "description": "Use strict search first: improves result accuracy at the cost of possible slow backup results if strict search returns nothing",
         "default": true
       }
     }

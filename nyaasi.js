@@ -55,15 +55,15 @@ export default new class ApiClient {
   }
   
   buildSearchQuery(title, episode, strict = false) {
-    const parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim()
-    const parsedEpisode = episode.toString().padStart(2, '0')
+    const parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim();
+    const parsedEpisode = episode.toString().padStart(2, '0');
 
-    let query = `"${parsedTitle}"`
-    if (episode) query += ` - "${parsedEpisode} "`
+    let query = `"${parsedTitle}"`;
+    if (episode) query += ` - "${parsedEpisode} "`;
 
-    if(strict) query = `"${query.replaceAll('"', "")}"`
+    if(strict) query = `"${query.replaceAll('"', "")}"`;
 
-    return query
+    return query;
   }
 
   map(data) {
