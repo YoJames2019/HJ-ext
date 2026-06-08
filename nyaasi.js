@@ -72,11 +72,18 @@ export default new class ApiClient {
 
     let query = `"${finalTitle}"`;
 
-    // S1 main: "Tsue to Tsurugi no Wistoria" "- 01 "
-    // S1 alt: "Tsue to Tsurugi no Wistoria" "01 "
-    // S2 main: "Tsue to Tsurugi no Wistoria" "S2 - 01 "
-    // S2 alt: "Tsue to Tsurugi no Wistoria" "S201 "
-    if (episode) query += ` "${seasonText}${alt ? `` : ` - `}${parsedEpisode} "`;
+    /*
+     * S1 main strict: "Kusuriya no Hitorigoto - 19 "
+     * S1 main: "Kusuriya no Hitorigoto"" - 19 "
+     * S1 alt strict: "Kusuriya no Hitorigoto 19 "
+     * S1 alt: "Kusuriya no Hitorigoto"" 19 "
+     * 
+     * S2 main strict: "Tsue to Tsurugi no Wistoria S2 - 01 "
+     * S2 main: "Tsue to Tsurugi no Wistoria"" S2 - 01 "
+     * S2 alt strict: "Tsue to Tsurugi no Wistoria S201 "
+     * S2 alt: "Tsue to Tsurugi no Wistoria"" S201 "
+    */
+    if (episode) query += `" ${seasonText}${alt ? `` : `${seasonText ? " " : ""}- `}${parsedEpisode} "`;
 
     if(strict) query = `"${query.replaceAll('"', "")}"`;
 
@@ -108,7 +115,7 @@ export default new class ApiClient {
 
   map(data, query) {
     return data.results.map(item => ({
-      title: `${item.name} (${query})` || '',
+      title: `(${query}) ${item.name}` || '',
       link: item.magnet || '',
       seeders: parseInt(item.seeders || '0'),
       leechers: parseInt(item.leechers || '0'),
