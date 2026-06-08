@@ -59,7 +59,7 @@ export default new class ApiClient {
     const parsedEpisode = episode.toString().padStart(2, '0')
 
     let query = `"${parsedTitle}"`
-    if (episode) query += ` "${parsedEpisode} "`
+    if (episode) query += ` - "${parsedEpisode} "`
 
     if(strict) query = `"${query.replaceAll('"', "")}"`
 
