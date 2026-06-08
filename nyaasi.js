@@ -66,7 +66,6 @@ export default new class ApiClient {
     let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim();
     let parsedEpisode = episode.toString().padStart(2, '0');
     
-    // find season number
     let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
     
     let finalTitle = strippedTitle
@@ -80,20 +79,19 @@ export default new class ApiClient {
   }
 
   stripSeason(input) {
-      let match1 = input.match(regex1);
-      let match2 = input.match(regex2);
+      let seasonRegexes = [/Season\s+(\d+)/i, /(\d+)(?:st|nd|rd|th)\s*Season/i]
 
       let seasonNumber = null;
       let strippedTitle = input;
 
-      if (match1) {
-          // If the first pattern matches, we take the number and remove that specific instance
-          seasonNumber = match1[1];
-          strippedTitle = input.replace(regex1, "").trim();
-      } else if (match2) {
-          // If the second fails but the second succeeds, we do the same for the second pattern
-          seasonNumber = match2[1];
-          strippedTitle = input.replace(regex2, "").trim();
+      for(let regex of seasonRegexes) {
+        let match = input.match(regex)
+
+        if(match){
+          seasonNumber = match[1]
+          strippedTitle = input.replace(regex, "").trim()
+          break
+        }
       }
 
       return {
