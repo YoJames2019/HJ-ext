@@ -6,9 +6,9 @@ export default new class ApiClient {
 
     if (!titles?.length) return []
 
-    let results = this.findTorrentResults(titles, episode, options)
+    let results = await this.findTorrentResults(titles, episode, options)
 
-    if (!results) 
+    if (results.length < 1) results = await this.findTorrentResults(titles, episode, options, true)
 
     return results
   }
