@@ -6,9 +6,11 @@ export default new class ApiClient {
 
     if (!titles?.length) return []
 
-    let results = await Promise.all([this.findTorrentResults(titles, episode, options), this.findTorrentResults(titles, episode, options, true)])
-    
-    return results.flat()
+    let results = await this.findTorrentResults(titles, episode, options)
+
+    if (results.length < 1) results = await this.findTorrentResults(titles, episode, options, true)
+
+    return results
   }
 
   batch = this.single
