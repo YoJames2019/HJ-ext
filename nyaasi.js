@@ -31,8 +31,17 @@ export default new class ApiClient {
   movie = this.single
 
   async findTorrentResults(titles, episode, extensionOpts, opts){
-    console.log(titles)
-    let title = opts.altTitle ? titles[1] : titles[0]
+    /**
+     * titles:
+     * 0: "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru? 2nd Season"
+     * 1: "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru? S2"
+     * 2: "The Beginning After the End Season 2"
+     * 3: "The Beginning After the End S2"
+     * 4: "最強の王様、二度目の人生は 何をする? 第2期"
+     * 5: "TBATE S2"
+     * 6: "Начало после конца 2"
+     */
+    let title = opts.altTitle ? titles[2] ?? titles[0] : titles[0]
 
     let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
