@@ -44,7 +44,7 @@ export default new class ApiClient {
      * 5: "TBATE S2"
      * 6: "Начало после конца 2"
      */
-    
+    console.log(titles)
     if(opts.altTitle && !titles[2].trim()) return []
     console.log(`altTitle enabled: ${opts.altTitle}, trimmed title: "${titles[2].trim()}", result: ${!titles[2].trim()}`)
     let title = opts.altTitle ? titles[2] : titles[0]
