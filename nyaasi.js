@@ -17,10 +17,10 @@ export default new class ApiClient {
     let results;
     for (let config of configs){
 
-      let allResults = await Promise.all(
+      let allResults = await Promise.all([
         this.findTorrentResults(titles, episode, options, { altTitle: false, ...config }), 
         this.findTorrentResults(titles, episode, options, { altTitle: true, ...config })
-      )
+      ])
       
       results = allResults.flat()
       if(results && results.length > 0) {
