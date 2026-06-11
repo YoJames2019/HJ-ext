@@ -1,5 +1,5 @@
 export default new class ApiClient {
-  async single({ titles, episode }, options) {
+  async single({ media, titles, episode }, options) {
     if(options.apiUrl === "") {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net")
     }
@@ -14,6 +14,7 @@ export default new class ApiClient {
       { altEpisode: true, altSeason: true },
     ]
 
+    console.log(media)
     let results;
     for (let config of configs){
 
