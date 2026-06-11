@@ -8,15 +8,15 @@ export default new class ApiClient {
 
     // altEpisode format, altSeason format
     const configs = [
-      [false, false],
-      [false, true],
-      [true, false],
-      [true, true],
+      { altEpisode: false, altSeason: false },
+      { altEpisode: false, altSeason: true },
+      { altEpisode: true, altSeason: false },
+      { altEpisode: true, altSeason: true },
     ]
 
     let results;
     for (let config of configs){
-      results = await this.findTorrentResults(titles, episode, options, ...config)
+      results = await this.findTorrentResults(titles, episode, options, config)
       
       if(results && results.length > 0) break;
     }
@@ -26,35 +26,35 @@ export default new class ApiClient {
   batch = this.single
   movie = this.single
 
-  async findTorrentResults(titles, episode, options, altEpisode = false, altSeason = false){
-    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst, altEpisode, altSeason)
+  async findTorrentResults(titles, episode, extensionOpts, opts){
+    let query = this.buildSearchQuery(titles[0], episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
-    let data = await this.fetchData(query, options, options.useStrictSearchFirst)
+    let data = await this.fetchData(query, extensionOpts, extensionOpts.useStrictSearchFirst)
 
-    if(options.useStrictSearchFirst && data.results.length < 1) {
-      query = this.buildSearchQuery(titles[0], episode, false, altEpisode, altSeason)
+    if(extensionOpts.useStrictSearchFirst && data.results.length < 1) {
+      query = this.buildSearchQuery(titles[0], episode, false, opts)
       console.log(query)
-      data = await this.fetchData(query, options)
+      data = await this.fetchData(query, extensionOpts)
     }
 
     return this.map(data)
   }
 
-  async fetchData(query, options, strict = false) {
+  async fetchData(query, extensionOpts, strict = false) {
     const headers = {
       "Content-Type": "application/json",
-      "X-API-Key": options.apiKey || ""
+      "X-API-Key": extensionOpts.apiKey || ""
     }
 
-    const res = await fetch(`${options.apiUrl}/api/search`, {
+    const res = await fetch(`${extensionOpts.apiUrl}/api/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ term: query, pageSize: options.resultsLimit ?? 10 }),
+      body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10 }),
     });
 
     if (!res.ok) {
       if(res.status === 429){
-        if(options.apiKey !== "") {
+        if(extensionOpts.apiKey !== "") {
           throw new Error("Invalid or incorrect API key!")
         }
         throw new Error("You cannot access this api without authorization! If you have an API key, make sure to put it in the extension settings!")
@@ -70,7 +70,7 @@ export default new class ApiClient {
     return { results: data, strict }
   }
   
-  buildSearchQuery(title, episode, strict = false, altEpisode = false, altSeason = false) {
+  buildSearchQuery(title, episode, strict = false, opts) {
     let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-:,.']/g, ' ').trim();
     let parsedEpisode = episode.toString().padStart(2, '0');
     
@@ -78,7 +78,7 @@ export default new class ApiClient {
     let finalTitle = parsedTitle
 
 
-    if(altSeason){
+    if(opts.altSeason){
       let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
 
       finalTitle = strippedTitle
@@ -94,18 +94,21 @@ export default new class ApiClient {
      * S1 altE strict: "Kusuriya no Hitorigoto 19 "
      * S1 altE: "Kusuriya no Hitorigoto"" 19 "
      * 
-     * S2 main strict: "Tsue to Tsurugi no Wistoria S2 - 01 "
-     * S2 main: "Tsue to Tsurugi no Wistoria"" S2 - 01 "
-     * S2 altS: "Tsue to Tsurugi no Wistoria Season 2"" - 01 "
-     * S2 altE strict: "Tsue to Tsurugi no Wistoria S2E01 "
-     * S2 altE: "Tsue to Tsurugi no Wistoria"" S2E01 "
+     * S2 main strict: "Tsue to Tsurugi no Wistoria Season 2 - 01 "
+     * S2 main: "Tsue to Tsurugi no Wistoria"" Season 2 - 01 "
+     * S2 altS strict: "Tsue to Tsurugi no Wistoria S2 - 01 "
+     * S2 altS: "Tsue to Tsurugi no Wistoria"" S2 - 01 "
+     * S2 altS altE strict: "Tsue to Tsurugi no Wistoria S2E01 "
+     * S2 altS altE: "Tsue to Tsurugi no Wistoria"" S2E01 "
+     * S2 altE strict: "Tsue to Tsurugi no Wistoria Season 2 E01 "
+     * S2 altE: "Tsue to Tsurugi no Wistoria"" Season 2 E01 "
     */
 
     query += `" `
 
     if(parsedSeason) query += parsedSeason
 
-    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}`;
+    if (episode) query += `${opts.altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}`;
 
     query += ` "`
 
