@@ -6,23 +6,33 @@ export default new class ApiClient {
 
     if (!titles?.length) return []
 
-    let results = await this.findTorrentResults(titles, episode, options)
+    // altEpisode format, altSeason format
+    const configs = [
+      [false, false],
+      [false, true],
+      [true, false],
+      [true, true],
+    ]
 
-    if (results.length < 1) results = await this.findTorrentResults(titles, episode, options, true)
-
+    let results;
+    for (let config of configs){
+      results = await this.findTorrentResults(titles, episode, options, ...config)
+      
+      if(results && results.length > 0) break;
+    }
     return results
   }
 
   batch = this.single
   movie = this.single
 
-  async findTorrentResults(titles, episode, options, alt = false){
-    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst, alt)
+  async findTorrentResults(titles, episode, options, altEpisode = false, altSeason = false){
+    let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst, altEpisode, altSeason)
     console.log(query)
     let data = await this.fetchData(query, options, options.useStrictSearchFirst)
 
     if(options.useStrictSearchFirst && data.results.length < 1) {
-      query = this.buildSearchQuery(titles[0], episode)
+      query = this.buildSearchQuery(titles[0], episode, false, altEpisode, altSeason)
       console.log(query)
       data = await this.fetchData(query, options)
     }
@@ -60,32 +70,48 @@ export default new class ApiClient {
     return { results: data, strict }
   }
   
-  buildSearchQuery(title, episode, strict = false, alt = false) {
-    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-]/g, ' ').trim();
+  buildSearchQuery(title, episode, strict = false, altEpisode = false, altSeason = false) {
+    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-:]/g, ' ').trim();
     let parsedEpisode = episode.toString().padStart(2, '0');
     
-    let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
-    
-    let finalTitle = strippedTitle
+    let parsedSeason
+    let finalTitle = parsedTitle
 
+
+    if(altSeason){
+      let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
+
+      finalTitle = strippedTitle
+      parsedSeason = seasonText
+    } 
+    
     let query = `"${finalTitle}"`;
 
     /*
+     *
      * S1 main strict: "Kusuriya no Hitorigoto - 19 "
      * S1 main: "Kusuriya no Hitorigoto"" - 19 "
-     * S1 alt strict: "Kusuriya no Hitorigoto 19 "
-     * S1 alt: "Kusuriya no Hitorigoto"" 19 "
+     * S1 altE strict: "Kusuriya no Hitorigoto 19 "
+     * S1 altE: "Kusuriya no Hitorigoto"" 19 "
      * 
      * S2 main strict: "Tsue to Tsurugi no Wistoria S2 - 01 "
      * S2 main: "Tsue to Tsurugi no Wistoria"" S2 - 01 "
-     * S2 alt strict: "Tsue to Tsurugi no Wistoria S201 "
-     * S2 alt: "Tsue to Tsurugi no Wistoria"" S201 "
+     * S2 altS: "Tsue to Tsurugi no Wistoria Season 2"" - 01 "
+     * S2 altE strict: "Tsue to Tsurugi no Wistoria S2E01 "
+     * S2 altE: "Tsue to Tsurugi no Wistoria"" S2E01 "
     */
-    if (episode) query += `" ${seasonText}${alt ? `` : `${seasonText ? " " : ""}- `}${parsedEpisode} "`;
+
+    query += `" `
+
+    if(parsedSeason) query += parsedSeason
+
+    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode} "`;
+
+    query += ` "`
 
     if(strict) query = `"${query.replaceAll('"', "")}"`;
 
-    return query;
+    return query.trim();
   }
 
   stripSeason(input) {
