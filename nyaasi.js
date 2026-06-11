@@ -71,7 +71,7 @@ export default new class ApiClient {
   }
   
   buildSearchQuery(title, episode, strict = false, altEpisode = false, altSeason = false) {
-    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-:]/g, ' ').trim();
+    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s-:,.']/g, ' ').trim();
     let parsedEpisode = episode.toString().padStart(2, '0');
     
     let parsedSeason
@@ -105,7 +105,7 @@ export default new class ApiClient {
 
     if(parsedSeason) query += parsedSeason
 
-    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}"`;
+    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}`;
 
     query += ` "`
 
