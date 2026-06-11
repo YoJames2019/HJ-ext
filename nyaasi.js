@@ -8,10 +8,14 @@ export default new class ApiClient {
 
     // altEpisode format, altSeason format
     const configs = [
-      { altEpisode: false, altSeason: false },
-      { altEpisode: false, altSeason: true },
-      { altEpisode: true, altSeason: false },
-      { altEpisode: true, altSeason: true },
+      { altEpisode: false, altSeason: false, altTitle: false },
+      { altEpisode: false, altSeason: false, altTitle: true},
+      { altEpisode: false, altSeason: true, altTitle: false },
+      { altEpisode: false, altSeason: true, altTitle: true },
+      { altEpisode: true, altSeason: false, altTitle: false },
+      { altEpisode: true, altSeason: false, altTitle: true },
+      { altEpisode: true, altSeason: true, altTitle: false },
+      { altEpisode: true, altSeason: true, altTitle: true },
     ]
 
     let results;
@@ -27,12 +31,15 @@ export default new class ApiClient {
   movie = this.single
 
   async findTorrentResults(titles, episode, extensionOpts, opts){
-    let query = this.buildSearchQuery(titles[0], episode, extensionOpts.useStrictSearchFirst, opts)
+    console.log(titles)
+    let title = opts.altTitle ? titles[1] : titles[0]
+
+    let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
     let data = await this.fetchData(query, extensionOpts, extensionOpts.useStrictSearchFirst)
 
     if(extensionOpts.useStrictSearchFirst && data.results.length < 1) {
-      query = this.buildSearchQuery(titles[0], episode, false, opts)
+      query = this.buildSearchQuery(title, episode, false, opts)
       console.log(query)
       data = await this.fetchData(query, extensionOpts)
     }
