@@ -105,7 +105,7 @@ export default new class ApiClient {
 
     if(parsedSeason) query += parsedSeason
 
-    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode} "`;
+    if (episode) query += `${altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}"`;
 
     query += ` "`
 
