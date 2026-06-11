@@ -46,8 +46,9 @@ export default new class ApiClient {
      */
     
     if(opts.altTitle && !titles[2].trim()) return []
-    
+    console.log(`altTitle enabled: ${opts.altTitle}, trimmed title: "${titles[2].trim()}", result: ${!titles[2].trim()}`)
     let title = opts.altTitle ? titles[2] : titles[0]
+    console.log(`Title: "${title}"`)
     
     let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
