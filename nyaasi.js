@@ -8,21 +8,24 @@ export default new class ApiClient {
 
     // altEpisode format, altSeason format
     const configs = [
-      { altEpisode: false, altSeason: false, altTitle: false },
-      { altEpisode: false, altSeason: false, altTitle: true},
-      { altEpisode: false, altSeason: true, altTitle: false },
-      { altEpisode: false, altSeason: true, altTitle: true },
-      { altEpisode: true, altSeason: false, altTitle: false },
-      { altEpisode: true, altSeason: false, altTitle: true },
-      { altEpisode: true, altSeason: true, altTitle: false },
-      { altEpisode: true, altSeason: true, altTitle: true },
+      { altEpisode: false, altSeason: false },
+      { altEpisode: true, altSeason: false},
+      { altEpisode: false, altSeason: true },
+      { altEpisode: true, altSeason: true },
     ]
 
     let results;
     for (let config of configs){
-      results = await this.findTorrentResults(titles, episode, options, config)
+
+      let allResults = await Promise.all(
+        this.findTorrentResults(titles, episode, options, { altTitle: false, ...config }), 
+        this.findTorrentResults(titles, episode, options, { altTitle: true, ...config })
+      )
       
-      if(results && results.length > 0) break;
+      results = allResults.flat()
+      if(results && results.length > 0) {
+        break;
+      }
     }
     return results
   }
