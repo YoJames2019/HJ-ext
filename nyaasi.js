@@ -18,11 +18,12 @@ export default new class ApiClient {
 
   async findTorrentResults(titles, episode, options, alt = false){
     let query = this.buildSearchQuery(titles[0], episode, options.useStrictSearchFirst, alt)
-
+    console.log(query)
     let data = await this.fetchData(query, options, options.useStrictSearchFirst)
 
     if(options.useStrictSearchFirst && data.results.length < 1) {
       query = this.buildSearchQuery(titles[0], episode)
+      console.log(query)
       data = await this.fetchData(query, options)
     }
 
@@ -32,10 +33,7 @@ export default new class ApiClient {
   async fetchData(query, options, strict = false) {
     const headers = {
       "Content-Type": "application/json",
-    }
-
-    if(options.apiKey !== ""){
-      headers["X-API-Key"] = options.apiKey
+      "X-API-Key": options.apiKey || ""
     }
 
     const res = await fetch(`${options.apiUrl}/api/search`, {
