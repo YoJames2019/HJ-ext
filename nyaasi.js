@@ -44,8 +44,11 @@ export default new class ApiClient {
      * 5: "TBATE S2"
      * 6: "Начало после конца 2"
      */
-    let title = opts.altTitle ? titles[2] ?? titles[0] : titles[0]
-
+    
+    if(opts.altTitle && !titles[2].trim()) return []
+    
+    let title = opts.altTitle ? titles[2] : titles[0]
+    
     let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
     let data = await this.fetchData(query, extensionOpts, extensionOpts.useStrictSearchFirst)
