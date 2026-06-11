@@ -8,8 +8,8 @@ export default new class ApiClient {
 
     // altEpisode format, altSeason format
     const configs = [
-      { altEpisode: false, altSeason: false },
       { altEpisode: false, altSeason: true },
+      { altEpisode: false, altSeason: false },
       { altEpisode: true, altSeason: false},
       { altEpisode: true, altSeason: true },
     ]
