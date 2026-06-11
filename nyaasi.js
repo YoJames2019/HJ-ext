@@ -14,7 +14,6 @@ export default new class ApiClient {
       { altEpisode: true, altSeason: true },
     ]
 
-    console.log(media)
     let results;
     for (let config of configs){
 
@@ -31,8 +30,8 @@ export default new class ApiClient {
     return results
   }
 
-  batch = this.single
-  movie = this.single
+  batch = () => [];
+  movie = () => [];
 
   async findTorrentResults(titles, episode, extensionOpts, opts){
     /**
