@@ -1,10 +1,10 @@
 export default new class ApiClient {
-  async single({ media, titles, episode }, options) {
+  async single({ media, episode }, options) {
     if(options.apiUrl === "") {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net")
     }
 
-    if (!titles?.length) return []
+    if (!media.title) return []
 
     // altEpisode format, altSeason format
     const configs = [
@@ -19,8 +19,8 @@ export default new class ApiClient {
     for (let config of configs){
 
       let allResults = await Promise.all([
-        this.findTorrentResults(titles, episode, options, { altTitle: false, ...config }), 
-        this.findTorrentResults(titles, episode, options, { altTitle: true, ...config })
+        this.findTorrentResults(media.title, episode, options, { altTitle: false, ...config }), 
+        this.findTorrentResults(media.title, episode, options, { altTitle: true, ...config })
       ])
       
       results = allResults.flat()
@@ -37,19 +37,14 @@ export default new class ApiClient {
   async findTorrentResults(titles, episode, extensionOpts, opts){
     /**
      * titles:
-     * 0: "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru? 2nd Season"
-     * 1: "Saikyou no Ousama, Nidome no Jinsei wa Nani wo Suru? S2"
-     * 2: "The Beginning After the End Season 2"
-     * 3: "The Beginning After the End S2"
-     * 4: "最強の王様、二度目の人生は 何をする? 第2期"
-     * 5: "TBATE S2"
-     * 6: "Начало после конца 2"
+     *   english: "Petals of Reincarnation"
+     *   native: "リィンカーネーションの花弁"
+     *   romaji: "Reincarnation no Kaben"
+     *   userPreferred: "Petals of Reincarnation"
      */
-    console.log(titles)
-    if(opts.altTitle && !titles[2].trim()) return []
-    console.log(`altTitle enabled: ${opts.altTitle}, trimmed title: "${titles[2].trim()}", result: ${!titles[2].trim()}`)
-    let title = opts.altTitle ? titles[2] : titles[0]
-    console.log(`Title: "${title}"`)
+    if(opts.altTitle && !titles.english) return []
+
+    let title = opts.altTitle ? titles.english : titles.romaji
     
     let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
     console.log(query)
