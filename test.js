@@ -1,106 +1,147 @@
-function buildSearchQuery(title, episode, strict = false) {
-    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s\p{P}\p{S}]/gu, ' ').trim();
-    let parsedEpisode = episode.toString().padStart(2, '0');
+class Test {
 
-    let res = this.stripSeason(parsedTitle)
-    
-    let seasonNumber = res.seasonNumber
-    let finalTitle = res.strippedTitle
+    buildSearchQuery(title, episode, strict = false) {
+        let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s\p{P}\p{S}]/gu, ' ').trim();
+        let parsedEpisode = episode.toString().padStart(2, '0');
 
-    let query;
+        let res = this.stripSeason(parsedTitle)
+        let seasonNumber = res.seasonNumber
+        let finalTitle = res.strippedTitle
 
-    if (strict) {
-        query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`;
-    }
-    else {
-        let combos = genSeasonTitleEpisodeCombinations(parsedTitle, seasonNumber, parsedEpisode)
+        let query;
 
-        query = combos.map(r => `"${r}"`).join("|")
-    }
+        if (strict) {
+            query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`;
+        }
+        else {
+            let combos = this.genSeasonTitleEpisodeCombinations(finalTitle, seasonNumber, parsedEpisode)
 
-    return query;
-}
-
-
-function genSeasonTitleEpisodeCombinations(titles, seasonNumber, episode) {
-
-    if(!Array.isArray(titles)) titles = [titles]
-
-    let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}"]
-    let episodeSeparators = ["E", " - "]
-
-
-    let finalCombos = []
-    let seasonCombos = []
-
-    if (!seasonNumber) seasonNumber = 1
-
-    for (let title of titles) {
-        if (title.includes(":")) titles.push(title.split(":")[0])
-
-        for (let variationTemplate of seasonVariations) {
-            let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{suffix}", getSuffix(seasonNumber))
-            let str = `${title} ${variationStr}`
-            seasonCombos.push(str)
+            query = combos.map(r => `"${r}"`).join("|")
         }
 
-        if (seasonNumber === 1) {
-            seasonCombos.push(`${title} {sep}`)
-        }
+        return query;
     }
 
-    for (let separator of episodeSeparators) {
-        for (let comboIndex in seasonCombos) {
-            finalCombos.push(`${seasonCombos[comboIndex].replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
+    genSeasonTitleEpisodeCombinations(titles, seasonNumber, episode) {
+
+        if (!Array.isArray(titles)) titles = [titles]
+
+        let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}", "{num} {sep}"]
+        let episodeSeparators = ["E", " - "]
+
+        let processTitles = []
+
+        let finalCombos = []
+        let seasonCombos = []
+
+        if (!seasonNumber) seasonNumber = 1
+
+        const cleanTitleRegex = /[^a-zA-Z0-9 -,']/g
+
+        for(let title of titles) {
+            processTitles.push(title)
+
+            if(title.includes(":")) titles.push(title.split(":")[0])
+
+            if(cleanTitleRegex.test(title)) titles.push(title.replace(cleanTitleRegex, ''))
         }
-    }
 
-
-    return finalCombos
-}
-
-function getSuffix(input) {
-    switch (input) {
-        case 1:
-            return "st"
-        case 2:
-            return "nd"
-        case 3:
-            return "rd"
-        default:
-            if (input > 0) {
-                return "th"
+        for (let title of processTitles) {
+            for (let variationTemplate of seasonVariations) {
+                let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{suffix}", this.getSuffix(seasonNumber))
+                let str = `${title} ${variationStr}`
+                seasonCombos.push(str)
             }
-            return ""
+
+            if (seasonNumber === 1) {
+                seasonCombos.push(`${title} {sep}`)
+            }
+        }
+
+        for (let separator of episodeSeparators) {
+            for (let comboIndex in seasonCombos) {
+                finalCombos.push(`${seasonCombos[comboIndex].replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
+            }
+        }
+
+
+        return finalCombos
     }
-}
 
-function stripSeason(input) {
-    let seasonRegexes = [/Season\s+(\d+)/i, /(\d+)(?:st|nd|rd|th)\s*Season/i]
-
-    let seasonNumber = null;
-    let strippedTitle = input;
-
-    for (let regex of seasonRegexes) {
-        let match = input.match(regex)
-
-        if (match) {
-            seasonNumber = match[1]
-            strippedTitle = input.replace(regex, "").trim()
-            break
+    getSuffix(input) {
+        switch (input) {
+            case 1:
+                return "st"
+            case 2:
+                return "nd"
+            case 3:
+                return "rd"
+            default:
+                if (input > 0) {
+                    return "th"
+                }
+                return ""
         }
     }
 
-    return {
-        seasonText: seasonNumber ? `S${seasonNumber}` : "",
-        seasonNumber,
-        strippedTitle
-    };
+    stripSeason(input) {
+        let seasonRegexes = [/Season\s+(\d+)/i, /(\d+)(?:st|nd|rd|th)\s*Season/i]
+
+        let seasonNumber = null;
+        let strippedTitle = input;
+
+        for (let regex of seasonRegexes) {
+            let match = input.match(regex)
+
+            if (match) {
+                seasonNumber = match[1]
+                strippedTitle = input.replace(regex, "").trim()
+                break
+            }
+        }
+
+        let romanSeasonRegexes = [/Season ([IV]+)$/, /([IV]+)$/]
+        if (!seasonNumber) {
+            for (let regex of romanSeasonRegexes) {
+                let match = input.match(regex)
+
+                if (match) {
+                    seasonNumber = this.numeralsToNumbers(match[1])
+                    strippedTitle = input.replace(regex, "").trim()
+                }
+            }
+        }
+
+        return {
+            seasonText: seasonNumber ? `S${seasonNumber}` : "",
+            seasonNumber: seasonNumber ? Number(seasonNumber) : seasonNumber,
+            strippedTitle
+        };
+    }
+
+    numeralsToNumbers(numeral) {
+        let map = {
+            "I": 1,
+            "II": 2,
+            "III": 3,
+            "IV": 4,
+            "V": 5
+        }
+
+        let number = map[numeral]
+
+        return number
+    }
 }
 
-let res = genSeasonTitleEpisodeCombinations(["Tsue to Tsurugi no Wistoria"], 2, 3)
 
 
-res.sort().forEach(t => console.log(t))
 
-console.log(buildSearchQuery("Tsue to Tsurugi no Wistoria", 2 ))
+// let res = genSeasonTitleEpisodeCombinations(["Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu II"], 2, 3)
+
+
+// res.sort().forEach(t => console.log(t))
+
+const tester = new Test()
+
+console.log(tester.buildSearchQuery("Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu II", 2))
