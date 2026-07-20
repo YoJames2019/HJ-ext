@@ -41,9 +41,13 @@ class Test {
         for(let title of titles) {
             processTitles.push(title)
 
-            if(title.includes(":")) titles.push(title.split(":")[0])
+            if(cleanTitleRegex.test(title)) {
+                if(title.includes(":")) {
+                    title = title.split(":")[0]
+                }
 
-            if(cleanTitleRegex.test(title)) titles.push(title.replace(cleanTitleRegex, ''))
+                titles.push(title.replace(cleanTitleRegex, ''))
+            }
         }
 
         for (let title of processTitles) {
@@ -137,11 +141,11 @@ class Test {
 
 
 
-// let res = genSeasonTitleEpisodeCombinations(["Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu II"], 2, 3)
+const tester = new Test()
+
+// let res = tester.genSeasonTitleEpisodeCombinations(["Buchigire Reijou wa Houfuku wo Chikaimashita.: Madousho no Chikara de Sokoku wo Tataki Tsubushimasu"], null, 3)
 
 
 // res.sort().forEach(t => console.log(t))
 
-const tester = new Test()
-
-console.log(tester.buildSearchQuery("Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu II", 2))
+console.log(tester.buildSearchQuery("Buchigire Reijou wa Houfuku wo Chikaimashita.: Madousho no Chikara de Sokoku wo Tataki Tsubushimasu", 3))

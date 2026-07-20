@@ -114,9 +114,13 @@ export default new class ApiClient {
     for (let title of titles) {
       processTitles.push(title)
 
-      if (title.includes(":")) titles.push(title.split(":")[0])
+      if (cleanTitleRegex.test(title)) {
+        if (title.includes(":")) {
+          title = title.split(":")[0]
+        }
 
-      if (cleanTitleRegex.test(title)) titles.push(title.replace(cleanTitleRegex, ''))
+        titles.push(title.replace(cleanTitleRegex, ''))
+      }
     }
 
     for (let title of processTitles) {
