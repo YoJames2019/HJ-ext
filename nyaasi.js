@@ -87,7 +87,7 @@ export default new class ApiClient {
       query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`;
     }
     else {
-        let combos = this.genSeasonTitleEpisodeCombinations(parsedTitle, seasonNumber, parsedEpisode)
+        let combos = this.genSeasonTitleEpisodeCombinations(finalTitle, seasonNumber, parsedEpisode)
 
         query = combos.map(r => `"${r}"`).join("|")
     }
@@ -96,6 +96,9 @@ export default new class ApiClient {
   }
 
   genSeasonTitleEpisodeCombinations(titles, seasonNumber, episode) {
+
+    if(!Array.isArray(titles)) titles = [titles]
+
     let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}"]
     let episodeSeparators = ["E", " - "]
 
