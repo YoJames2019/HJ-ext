@@ -95,15 +95,18 @@ export default new class ApiClient {
     let parsedSeason
     let finalTitle = parsedTitle
 
-
+    
+    
     if(opts.altSeason){
       let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
-
+      
       finalTitle = strippedTitle
       parsedSeason = seasonText
     } 
     
     let query = `"${finalTitle}"`;
+    
+    if(!strict && parsedTitle.includes(":")) query += `|"${finalTitle.split(":")[0]}"` 
 
     /*
      *
