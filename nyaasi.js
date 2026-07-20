@@ -171,7 +171,7 @@ export default new class ApiClient {
           let match = input.match(regex)
 
           if(match) {
-            seasonNumber = match[1]
+            seasonNumber = this.numeralsToNumbers(match[1])
             strippedTitle = input.replace(regex, "").trim()
           }
         }
@@ -182,6 +182,20 @@ export default new class ApiClient {
           seasonNumber: seasonNumber ? Number(seasonNumber) : seasonNumber,
           strippedTitle
       };
+  }
+
+  numeralsToNumbers(numeral){
+    let map = {
+      "I": 1,
+      "II": 2,
+      "III": 3,
+      "IV": 4,
+      "V": 5
+    }
+
+    let number = map[numeral]
+
+    return number
   }
 
   map(data) {
