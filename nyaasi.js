@@ -6,28 +6,12 @@ export default new class ApiClient {
 
     if (!media.title) return []
 
-    // altEpisode format, altSeason format
-    const configs = [
-      { altEpisode: false, altSeason: true },
-      { altEpisode: false, altSeason: false },
-      { altEpisode: true, altSeason: false},
-      { altEpisode: true, altSeason: true },
-    ]
+    let allResults = await Promise.all([
+      this.findTorrentResults(media.title, episode, options, { altTitle: false }), 
+      this.findTorrentResults(media.title, episode, options, { altTitle: true })
+    ])
 
-    let results;
-    for (let config of configs){
-
-      let allResults = await Promise.all([
-        this.findTorrentResults(media.title, episode, options, { altTitle: false, ...config }), 
-        this.findTorrentResults(media.title, episode, options, { altTitle: true, ...config })
-      ])
-      
-      results = allResults.flat()
-      if(results && results.length > 0) {
-        break;
-      }
-    }
-    return results
+    return allResults.flat()
   }
 
   batch = () => [];
@@ -45,7 +29,7 @@ export default new class ApiClient {
 
     let title = opts.altTitle ? titles.english : titles.romaji
     
-    let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst, opts)
+    let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst)
     console.log(query)
     let data = await this.fetchData(query, extensionOpts, extensionOpts.useStrictSearchFirst)
 
@@ -88,54 +72,75 @@ export default new class ApiClient {
     return { results: data, strict }
   }
   
-  buildSearchQuery(title, episode, strict = false, opts) {
+  buildSearchQuery(title, episode, strict = false) {
     let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s\p{P}\p{S}]/gu, ' ').trim();
     let parsedEpisode = episode.toString().padStart(2, '0');
+
+    let res = this.stripSeason(parsedTitle)
     
-    let parsedSeason
-    let finalTitle = parsedTitle
+    let seasonNumber = res.seasonNumber
+    let finalTitle = res.strippedTitle
 
+    let query;
+
+    if (strict) {
+      query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`;
+    }
+    else {
+        let combos = this.genSeasonTitleEpisodeCombinations(parsedTitle, seasonNumber, parsedEpisode)
+
+        query = combos.map(r => `"${r}"`).join("|")
+    }
+
+    return query;
+  }
+
+  genSeasonTitleEpisodeCombinations(titles, seasonNumber, episode) {
+    let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}"]
+    let episodeSeparators = ["E", " - "]
+
+    let finalCombos = []
+    let seasonCombos = []
+
+    if(!seasonNumber) seasonNumber = 1
+
+    for (let title of titles){
+        if(title.includes(":")) titles.push(title.split(":")[0])
+
+        for (let variationTemplate of seasonVariations) {
+            let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{suffix}", this.getSuffix(seasonNumber))
+            let str = `${title} ${variationStr}`
+            seasonCombos.push(str)
+        }
     
-    
-    if(opts.altSeason){
-      let { strippedTitle, seasonText } = this.stripSeason(parsedTitle)
-      
-      finalTitle = strippedTitle
-      parsedSeason = seasonText
-    } 
-    
-    let query = `"${finalTitle}"`;
-    
-    if(!strict && parsedTitle.includes(":")) query += `|"${finalTitle.split(":")[0]}"` 
+        if (seasonNumber === 1) {
+            seasonCombos.push(`${title} {sep}`)
+        }
+    }
 
-    /*
-     *
-     * S1 main strict: "Kusuriya no Hitorigoto - 19 "
-     * S1 main: "Kusuriya no Hitorigoto"" - 19 "
-     * S1 altE strict: "Kusuriya no Hitorigoto 19 "
-     * S1 altE: "Kusuriya no Hitorigoto"" 19 "
-     * 
-     * S2 main strict: "Tsue to Tsurugi no Wistoria Season 2 - 01 "
-     * S2 main: "Tsue to Tsurugi no Wistoria"" Season 2 - 01 "
-     * S2 altS strict: "Tsue to Tsurugi no Wistoria S2 - 01 "
-     * S2 altS: "Tsue to Tsurugi no Wistoria"" S2 - 01 "
-     * S2 altS altE strict: "Tsue to Tsurugi no Wistoria S2E01 "
-     * S2 altS altE: "Tsue to Tsurugi no Wistoria"" S2E01 "
-     * S2 altE strict: "Tsue to Tsurugi no Wistoria Season 2 E01 "
-     * S2 altE: "Tsue to Tsurugi no Wistoria"" Season 2 E01 "
-    */
+    for (let separator of episodeSeparators){
+        for(let comboIndex in seasonCombos){
+            finalCombos.push(`${seasonCombos[comboIndex].replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
+        }
+    }
 
-    query += `" `
+    return finalCombos
+  }
 
-    if(parsedSeason) query += parsedSeason
-
-    if (episode) query += `${opts.altEpisode ? `E` : `${parsedSeason ? " " : ""}- `}${parsedEpisode}`;
-
-    query += ` "`
-
-    if(strict) query = `"${query.replaceAll('"', "")}"`;
-
-    return query.replace(/\s{2,}/g, ' ').trim();
+  getSuffix(input){
+    switch(input){
+      case 1:
+        return "st"
+      case 2:
+        return "nd"
+      case 3:
+        return "rd"
+      default:
+        if(input > 0){
+          return "th"
+        }
+        return ""
+    }
   }
 
   stripSeason(input) {
