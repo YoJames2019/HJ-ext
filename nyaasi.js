@@ -131,6 +131,9 @@ export default new class ApiClient {
   }
 
   getSuffix(input){
+
+    if(isNaN(input)) return ""
+    
     switch(input){
       case 1:
         return "st"
@@ -162,9 +165,21 @@ export default new class ApiClient {
         }
       }
 
+      let romanSeasonRegexes = [/Season ([IV]+)$/, /([IV]+)$/]
+      if(!seasonNumber){
+        for(let regex of romanSeasonRegexes) {
+          let match = input.match(regex)
+
+          if(match) {
+            seasonNumber = match[1]
+            strippedTitle = input.replace(regex, "").trim()
+          }
+        }
+      }
+
       return {
           seasonText: seasonNumber ? `S${seasonNumber}` : "",
-          seasonNumber,
+          seasonNumber: seasonNumber ? Number(seasonNumber) : seasonNumber,
           strippedTitle
       };
   }
