@@ -25,12 +25,13 @@ export default new class ApiClient {
      *   romaji: "Reincarnation no Kaben"
      *   userPreferred: "Petals of Reincarnation"
      */
-    if (opts.altTitle && !titles.english) return []
 
     let title = opts.altTitle ? titles.english : titles.romaji
 
+    if(!title) return []
+
     let query = this.buildSearchQuery(title, episode, extensionOpts.useStrictSearchFirst)
-    console.log(query)
+
     let data = await this.fetchData(query, extensionOpts, extensionOpts.useStrictSearchFirst)
 
     if (extensionOpts.useStrictSearchFirst && data.results.length < 1) {
@@ -51,7 +52,7 @@ export default new class ApiClient {
     const res = await fetch(`${extensionOpts.apiUrl}/api/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10 }),
+      body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10, filter: extensionOpts.filter ?? 2 }),
     });
 
     if (!res.ok) {
