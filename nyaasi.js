@@ -106,7 +106,7 @@ export default new class ApiClient {
 
     if (!Array.isArray(titles)) titles = [titles]
 
-    let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}", "{num} {sep}"]
+    let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}", "{num} {sep}", "S{2num}"]
     let episodeSeparators = ["E", " - "]
 
     let processTitles = []
@@ -132,7 +132,7 @@ export default new class ApiClient {
 
     for (let title of processTitles) {
       for (let variationTemplate of seasonVariations) {
-        let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{suffix}", this.getSuffix(seasonNumber))
+        let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{2num}", seasonNumber.padStart(2)).replace("{suffix}", this.getSuffix(seasonNumber))
         let str = `${title} ${variationStr}`
         seasonCombos.push(str)
       }
