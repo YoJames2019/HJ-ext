@@ -55,7 +55,6 @@ export default new class ApiClient {
       "X-API-Key": extensionOpts.apiKey || ""
     }
 
-    console.log(`nyaasiJ: ${extensionOpts.filter}: ${this.filterValues[extensionOpts.filter]}`)
     const res = await fetch(`${extensionOpts.apiUrl}/api/search`, {
       method: "POST",
       headers,
