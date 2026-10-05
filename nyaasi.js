@@ -6,6 +6,8 @@ export default new class ApiClient {
 
     if (!media.title) return []
 
+    console.log(options.filter)
+
     let allResults = await Promise.all([
       this.findTorrentResults(media.title, episode, options, { altTitle: false }),
       this.findTorrentResults(media.title, episode, options, { altTitle: true })
