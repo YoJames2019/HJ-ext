@@ -3,7 +3,7 @@
     "manifestVersion": 2,
     "name": "Nyaa",
     "id": "nyaasiJ",
-    "version": "3.1.1",
+    "version": "3.1.2",
     "type": "torrent",
     "accuracy": "medium",
     "ratio": 0,
@@ -35,7 +35,7 @@
         "type": "select",
         "description":"What types of torrents to show",
         "values": ["Any", "No remakes", "Trusted only"],
-        "default": 2
+        "default": "Trusted only"
       },
       "useStrictSearchFirst": {
         "type": "boolean",

@@ -1,12 +1,16 @@
 export default new class ApiClient {
+  filterValues = {
+    "Any": 0,
+    "No remakes": 1,
+    "Trusted only": 2
+  }
+
   async single({ media, episode }, options) {
     if (options.apiUrl === "") {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net")
     }
 
     if (!media.title) return []
-
-    console.log(options.filter)
 
     let allResults = await Promise.all([
       this.findTorrentResults(media.title, episode, options, { altTitle: false }),
@@ -51,10 +55,11 @@ export default new class ApiClient {
       "X-API-Key": extensionOpts.apiKey || ""
     }
 
+    console.log(`nyaasiJ: ${extensionOpts.filter}: ${this.filterValues[extensionOpts.filter]}`)
     const res = await fetch(`${extensionOpts.apiUrl}/api/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10, filter: extensionOpts.filter ?? 2 }),
+      body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10, filter: this.filterValues[extensionOpts.filter] ?? 2 }),
     });
 
     if (!res.ok) {
