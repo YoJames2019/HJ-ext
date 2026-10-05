@@ -132,7 +132,7 @@ export default new class ApiClient {
 
     for (let title of processTitles) {
       for (let variationTemplate of seasonVariations) {
-        let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{2num}", seasonNumber.padStart(2)).replace("{suffix}", this.getSuffix(seasonNumber))
+        let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{2num}", String(seasonNumber).padStart(2)).replace("{suffix}", this.getSuffix(seasonNumber))
         let str = `${title} ${variationStr}`
         seasonCombos.push(str)
       }
