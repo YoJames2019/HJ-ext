@@ -118,9 +118,9 @@ class Scoring {
         const variantPhrase = ` ${Parser.spaced(variant)} `
         const releasePhrase = ` ${Parser.spaced(releaseTitle)} `
 
-        const at = releasePhrase.indexOf(variantPhrase)
-        if (at >= 0 && releasePhrase !== variantPhrase) {
-            const extra = releasePhrase.slice(at + variantPhrase.length).trim()
+        const fullMatchIndex = releasePhrase.indexOf(variantPhrase)
+        if (fullMatchIndex >= 0 && releasePhrase !== variantPhrase) {
+            const extra = releasePhrase.slice(fullMatchIndex + variantPhrase.length).trim()
 
             sequel = /^(?:\d{1,2}|i{1,3}|iv|v|vi{1,3}|ix|x)\b/i.test(extra)
             if (sequel) return { JWScore, contained, sequel }

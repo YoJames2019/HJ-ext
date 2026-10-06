@@ -12,9 +12,9 @@ export default new class NyaapiExtension {
         if (!media?.title) return []
 
         const titles = [
-            ...new Set(Object.values(media.title ?? {}).filter(t => !!t)),
+            ...new Set(Object.values(media.title ?? {}).filter(title => !!title)),
             ...(media.synonyms ?? [])
-        ].filter(t => t && /^[\x20-\x7E]*$/.test(Parser.canon(t)))
+        ].filter(title => title && /^[\x20-\x7E]*$/.test(Parser.canon(title)))
 
         if (titles.length < 1) return []
 

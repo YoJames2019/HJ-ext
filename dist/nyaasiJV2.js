@@ -181,17 +181,17 @@ var API = class {
   }
   static getTitleVariants(titles) {
     const out = /* @__PURE__ */ new Set();
-    const add = (t) => {
-      t = t && t.trim();
-      if (t) out.add(t);
+    const add = (title) => {
+      title = title && title.trim();
+      if (title) out.add(title);
     };
     for (const raw of titles) {
       if (!raw) continue;
       const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0];
-      for (const t of [raw, base]) {
-        add(t);
-        const noSeason = parsing_default.stripSeason(t);
-        if (noSeason && noSeason !== t) {
+      for (const title of [raw, base]) {
+        add(title);
+        const noSeason = parsing_default.stripSeason(title);
+        if (noSeason && noSeason !== title) {
           add(noSeason);
           const franchise = noSeason.split(/\s+/)[0];
           if (franchise.length >= 4) add(franchise);
@@ -201,24 +201,24 @@ var API = class {
     return [...out];
   }
   static getEpisodeVariants(episode, season) {
-    const n = String(episode);
-    const e = n.padStart(2, "0");
-    const s1 = String(season ?? 1);
-    const s2 = s1.padStart(2, "0");
+    const epNum = String(episode);
+    const paddedEpNum = epNum.padStart(2, "0");
+    season = String(season ?? 1);
+    const paddedSeason = season.padStart(2, "0");
     return {
-      pairs: [`s${s2}e${e}`, `s${s1}e${e}`],
-      bare: [e, `e${e}`, `e${n}`]
+      pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
+      bare: [paddedEpNum, `e${paddedEpNum}`, `e${epNum}`]
     };
   }
   static buildQueries(titles, episode, season, exclusions = []) {
-    const titlePhrases = this.getTitleVariants(titles).filter((t) => parsing_default.compact(t).length > 0).map((t) => `"${parsing_default.spaced(t)}"`).join("|");
-    const exclude = exclusions.flatMap((x) => parsing_default.spaced(x).split(/\s+/)).filter(Boolean).map((t) => `-${t}`).join(" ");
-    const withEx = (q) => exclude ? `${q} ${exclude}` : q;
-    if (episode == null) return [withEx(titlePhrases)];
+    const titlePhrases = this.getTitleVariants(titles).filter((title) => parsing_default.compact(title).length > 0).map((title) => `"${parsing_default.spaced(title)}"`).join("|");
+    const excludeStr = exclusions.flatMap((exclusion) => parsing_default.spaced(exclusion).split(/\s+/)).filter(Boolean).map((term) => `-${term}`).join(" ");
+    const withExclusions = (query) => excludeStr ? `${query} ${excludeStr}` : query;
+    if (episode == null) return [withExclusions(titlePhrases)];
     const { pairs, bare } = this.getEpisodeVariants(episode, season);
     return [
-      withEx(`${titlePhrases} (${[...new Set(pairs)].join("|")})`),
-      withEx(`${titlePhrases} (${[...new Set(bare)].join("|")})`)
+      withExclusions(`${titlePhrases} (${[...new Set(pairs)].join("|")})`),
+      withExclusions(`${titlePhrases} (${[...new Set(bare)].join("|")})`)
     ];
   }
 };
@@ -309,9 +309,9 @@ var Scoring = class {
     if (!compactVariant || !compactRelease) return { JWScore, contained, sequel };
     const variantPhrase = ` ${parsing_default.spaced(variant)} `;
     const releasePhrase = ` ${parsing_default.spaced(releaseTitle)} `;
-    const at = releasePhrase.indexOf(variantPhrase);
-    if (at >= 0 && releasePhrase !== variantPhrase) {
-      const extra = releasePhrase.slice(at + variantPhrase.length).trim();
+    const fullMatchIndex = releasePhrase.indexOf(variantPhrase);
+    if (fullMatchIndex >= 0 && releasePhrase !== variantPhrase) {
+      const extra = releasePhrase.slice(fullMatchIndex + variantPhrase.length).trim();
       sequel = /^(?:\d{1,2}|i{1,3}|iv|v|vi{1,3}|ix|x)\b/i.test(extra);
       if (sequel) return { JWScore, contained, sequel };
     }
@@ -331,9 +331,9 @@ var index_default = new class NyaapiExtension {
     }
     if (!media?.title) return [];
     const titles = [
-      ...new Set(Object.values(media.title ?? {}).filter((t) => !!t)),
+      ...new Set(Object.values(media.title ?? {}).filter((title) => !!title)),
       ...media.synonyms ?? []
-    ].filter((t) => t && /^[\x20-\x7E]*$/.test(parsing_default.canon(t)));
+    ].filter((title) => title && /^[\x20-\x7E]*$/.test(parsing_default.canon(title)));
     if (titles.length < 1) return [];
     let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
     const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
