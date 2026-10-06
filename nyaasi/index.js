@@ -33,7 +33,7 @@ export default new class NyaapiExtension {
         let topResults = scoredResults
             .filter(res => res.hash && res.magnet)
             .filter(res => res.accScore >= this.SCORE_THRESH)
-            .sort((a, b) => b.accScore - a.accScore)
+            .sort((a, b) => (b.accScore - a.accScore) + Math.tanh((Number(b.seeders) - Number(a.seeders)) / 20) * 0.05)
             .slice(0, Number(options.resultsLimit) || 10)
 
         return this.map(topResults)
