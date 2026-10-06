@@ -364,6 +364,7 @@ var index_default = new class NyaapiExtension {
       leechers: parseInt(item.leechers || "0"),
       downloads: parseInt(item.completed || "0"),
       accuracy: item.accScore > this.SCORE_THRESH ? "high" : "medium",
+      accScore: item.accScore,
       hash: item.hash || "",
       size: parsing_default.parseFileSize(item.filesize),
       date: new Date(item.date),
