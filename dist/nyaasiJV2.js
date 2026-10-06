@@ -134,7 +134,7 @@ var Parser = class {
     return title.replace(/\b(?:the\s+)?final\s+season\b/gi, " ").replace(/\b(?:season|cour|part)\s*\d+\b/gi, " ").replace(/\b\d+(?:st|nd|rd|th)\s+season\b/gi, " ").replace(/\s+\b(?:i{1,3}|iv|v|vi{1,3}|ix|x)\b\s*$/i, "").replace(/\s{2,}/g, " ").trim();
   }
   static findWantedPart(titles) {
-    return Math.max(1, titles.map((title) => this.parsePart(title)));
+    return Math.max(1, ...titles.map((title) => this.parsePart(title)));
   }
   static findWantedSeason(titles) {
     for (const title of titles) {

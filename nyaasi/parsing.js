@@ -147,7 +147,7 @@ class Parser {
     }
 
     static findWantedPart(titles) {
-        return Math.max(1, titles.map(title => this.parsePart(title)))
+        return Math.max(1, ...titles.map(title => this.parsePart(title)))
     }
 
     static findWantedSeason(titles) {
