@@ -20,8 +20,8 @@ export default new class ApiClient {
     return allResults.flat()
   }
 
-  batch = () => [];
-  movie = () => [];
+  batch = () => []
+  movie = () => []
 
   async findTorrentResults(titles, episode, extensionOpts, opts) {
     /**
@@ -59,7 +59,7 @@ export default new class ApiClient {
       method: "POST",
       headers,
       body: JSON.stringify({ term: query, pageSize: extensionOpts.resultsLimit ?? 10, filter: this.filterValues[extensionOpts.filter] ?? 2 }),
-    });
+    })
 
     if (!res.ok) {
       if (res.status === 429) {
@@ -70,7 +70,7 @@ export default new class ApiClient {
       }
 
       return { results: [], strict }
-    };
+    }
 
     const data = await res.json()
 
@@ -80,18 +80,18 @@ export default new class ApiClient {
   }
 
   buildSearchQuery(title, episode, strict = false) {
-    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s\p{P}\p{S}]/gu, ' ').trim();
-    let parsedEpisode = episode.toString().padStart(2, '0');
+    let parsedTitle = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w\s\p{P}\p{S}]/gu, ' ').trim()
+    let parsedEpisode = String(episode ?? "").padStart(2, '0')
 
     let res = this.stripSeason(parsedTitle)
 
     let seasonNumber = res.seasonNumber
     let finalTitle = res.strippedTitle
 
-    let query;
+    let query
 
     if (strict) {
-      query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`;
+      query = `"${finalTitle} ${seasonNumber ? `Season ${seasonNumber} ` : ""}- ${parsedEpisode}"`
     }
     else {
       let combos = this.genSeasonTitleEpisodeCombinations(finalTitle, seasonNumber, parsedEpisode)
@@ -99,7 +99,7 @@ export default new class ApiClient {
       query = combos.map(r => `"${r}"`).join("|")
     }
 
-    return query;
+    return query
   }
 
   genSeasonTitleEpisodeCombinations(titles, seasonNumber, episode) {
@@ -116,9 +116,9 @@ export default new class ApiClient {
 
     if (!seasonNumber) seasonNumber = 1
 
-    const cleanTitleRegex = /[^a-zA-Z0-9 -,']/g
+    const cleanTitleRegex = /[^a-zA-Z0-9 -,']/
 
-    for (const title of titles) {
+    for (let title of titles) {
       processTitles.push(title)
 
       if (cleanTitleRegex.test(title)) {
@@ -151,8 +151,8 @@ export default new class ApiClient {
     }
 
     for (const separator of episodeSeparators) {
-      for (const comboIndex in seasonCombos) {
-        finalCombos.push(`${seasonCombos[comboIndex].replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
+      for (const combo of seasonCombos) {
+        finalCombos.push(`${combo.replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
       }
     }
 
@@ -160,30 +160,26 @@ export default new class ApiClient {
     return finalCombos
   }
 
-  getSuffix(input) {
+  getSuffix(num) {
+    num = Number(num)
+    if(!Number.isFinite(num) || num <= 0) return ""
 
-    if (isNaN(input)) return ""
+    const lastTwo = num % 100
+    if(lastTwo >= 11 && lastTwo <= 13) return "th"
 
-    switch (input) {
-      case 1:
-        return "st"
-      case 2:
-        return "nd"
-      case 3:
-        return "rd"
-      default:
-        if (input > 0) {
-          return "th"
-        }
-        return ""
+    switch (num % 10) {
+      case 1: return "st"
+      case 2: return "nd"
+      case 3: return "rd"
+      default: return "th"
     }
   }
 
   stripSeason(input) {
     let seasonRegexes = [/Season\s+(\d+)/i, /(\d+)(?:st|nd|rd|th)\s*Season/i]
 
-    let seasonNumber = null;
-    let strippedTitle = input;
+    let seasonNumber = null
+    let strippedTitle = input
 
     for (let regex of seasonRegexes) {
       let match = input.match(regex)
@@ -195,15 +191,21 @@ export default new class ApiClient {
       }
     }
 
-    let romanSeasonRegexes = [/Season ([IV]+)$/, /([IV]+)$/]
+   const romanSeasonRegexes = [                     
+     /Season\s+([IV]+)$/,                                                    
+     /(?:^|\s)(I|II|III|IV|V)$/,                          
+   ]  
     if (!seasonNumber) {
-      for (let regex of romanSeasonRegexes) {
+      for (const regex of romanSeasonRegexes) {
         let match = input.match(regex)
-
-        if (match) {
-          seasonNumber = this.numeralsToNumbers(match[1])
-          strippedTitle = input.replace(regex, "").trim()
-        }
+        if(!match) continue
+        
+        seasonNumber = this.numeralsToNumbers(match[1])
+        if(!seasonNumber) continue
+        
+        strippedTitle = input.replace(regex, "").trim()
+        
+        break
       }
     }
 
@@ -211,7 +213,7 @@ export default new class ApiClient {
       seasonText: seasonNumber ? `S${seasonNumber}` : "",
       seasonNumber: seasonNumber ? Number(seasonNumber) : seasonNumber,
       strippedTitle
-    };
+    }
   }
 
   numeralsToNumbers(numeral) {
