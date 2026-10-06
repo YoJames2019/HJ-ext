@@ -273,7 +273,7 @@ var Scoring = class {
     }
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
-  scoreResults(results, titles, wantedEpisode, episodic) {
+  static scoreResults(results, titles, wantedEpisode, episodic) {
     let wantedSeason = 1;
     if (episodic) {
       wantedSeason = parsing_default.findWantedSeason(titles);
@@ -299,7 +299,7 @@ var Scoring = class {
     }
     return results;
   }
-  scoreResult(variant, name) {
+  static scoreResult(variant, name) {
     let JWScore = 0;
     let contained = false;
     let sequel = false;

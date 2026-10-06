@@ -66,7 +66,8 @@ class Scoring {
 
         return jaro + (commonPrefix * 0.1) * (1 - jaro)
     }
-    scoreResults(results, titles, wantedEpisode, episodic) {
+    
+    static scoreResults(results, titles, wantedEpisode, episodic) {
 
         let wantedSeason = 1;
         if (episodic) {
@@ -103,7 +104,7 @@ class Scoring {
         return results
     }
 
-    scoreResult(variant, name) {
+    static scoreResult(variant, name) {
 
         let JWScore = 0;
         let contained = false;
