@@ -1,6 +1,5 @@
 // nyaasi/parsing.js
 var Parser = class {
-  static _ROMAN_TOKEN = /\b([ivxlcdm]{2,})\b/g;
   static _ROMAN_DIGITS = { i: 1, v: 5, x: 10, l: 50, c: 100, d: 500, m: 1e3 };
   static _ROMAN_TABLE = [
     [1e3, "m"],
@@ -73,17 +72,16 @@ var Parser = class {
     const SEASON_WORD = /\bseason\s*(\d{1,2})\b/;
     const SEASON_ORDINAL = /\b(\d{1,2})(?:st|nd|rd|th)\s+season\b/;
     const SEASON_PREFIX = /\bs(\d{1,2})\b/;
-    const PART_WORD = /\b(?:part|cour)\s*$/;
     let match;
     if (match = SEASON_WORD.exec(text)) return Number(match[1]);
     if (match = SEASON_ORDINAL.exec(text)) return Number(match[1]);
     if (match = SEASON_PREFIX.exec(text)) return Number(match[1]);
-    let roman = null;
-    for (const token of text.matchAll(this._ROMAN_TOKEN)) {
-      if (PART_WORD.test(text.slice(0, token.index))) continue;
-      roman = this.romanSeason(token[1]) ?? roman;
-    }
-    return roman;
+    const head = text.split(/\s*[:–—]\s+|\s+-\s+/)[0];
+    const words = head.split(/\s+/).filter(Boolean);
+    const last = words.pop();
+    const previous = words.pop();
+    if (previous === "part" || previous === "cour") return null;
+    return last ? this.romanSeason(last) : null;
   }
   static parseEpisode(text) {
     const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
