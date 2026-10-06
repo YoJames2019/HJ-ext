@@ -253,7 +253,8 @@ var index_default = new class NyaapiExtension {
     if (titles.length < 1) return [];
     let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
     let scoredResults = this.scoreResults(results, titles, episode);
-    return this.map(scoredResults.filter((res) => res.accScore >= SCORE_THRESH || res.accOverride));
+    let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, options.resultsLimit ?? 10);
+    return this.map(topResults);
   }
   scoreResults(results, titles, wantedEpisode) {
     let wantedSeason;
@@ -278,8 +279,7 @@ var index_default = new class NyaapiExtension {
         if (scoreData.contained) contained = scoreData.contained;
         if (scoreData.JWScore > highestScore) highestScore = scoreData.JWScore;
       }
-      results[index].accScore = highestScore;
-      results[index].accOverride = contained;
+      results[index].accScore = highestScore + (contained ? 1 : 0);
     }
     return results;
   }
