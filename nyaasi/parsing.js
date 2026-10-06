@@ -75,7 +75,7 @@ class Parser {
         if ((match = SEASON_WORD.exec(text))) return Number(match[1]);
         if ((match = SEASON_ORDINAL.exec(text))) return Number(match[1]);
         if ((match = SEASON_PREFIX.exec(text))) return Number(match[1]);
-        
+
         for (const part of [text, text.split(/\s*[:–—]\s+|\s+-\s+/)[0]]) {
             const words = part.split(/\s+/).filter(Boolean)
             const last = words.pop()
@@ -84,7 +84,7 @@ class Parser {
             const season = last ? this.romanSeason(last) : null
             if (season) return season
         }
-        
+
         return null
     }
 
@@ -100,7 +100,7 @@ class Parser {
         const EPISODE_CJK = /第\s*(\d+)\s*[话話]/;
         const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})(?:v\d+)?\b/;
 
-        const BATCH_RANGE = /\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
+        const BATCH_RANGE = /(?<!\b(?:part|cour|season)\s)\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
         const BATCH_WORD = /\b(?:complete|batch|cour)\b/;
 
         const FILE_EXTENSION = /\.[a-z0-9]{2,4}$/;
@@ -110,9 +110,12 @@ class Parser {
         let match;
         if ((match = EPISODE_PREFIX.exec(text))) return Number(match[1]);
         if ((match = EPISODE_CJK.exec(text))) return Number(match[1]);
+
+        if (BATCH_RANGE.test(text)) return null
+
         if ((match = EPISODE_DASH.exec(text))) return Number(match[1]);
 
-        if (BATCH_RANGE.test(text) || BATCH_WORD.test(text)) return null;
+        if (BATCH_WORD.test(text)) return null;
 
         const stem = text.replace(FILE_EXTENSION, "");
 
