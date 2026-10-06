@@ -17,6 +17,8 @@ export default new class NyaapiExtension {
 
         let results = await API.findTorrentResults(titles, episode, exclusions, options)
 
+        console.log(results)
+        console.log("what?")
         let scoredResults = this.scoreResults(results, titles, episode)
 
         let topResults = scoredResults
