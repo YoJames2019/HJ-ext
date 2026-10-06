@@ -203,8 +203,8 @@ var API = class {
     const s1 = String(season ?? 1);
     const s2 = s1.padStart(2, "0");
     return {
-      pairs: [`s${s2}e${e}`, `s${s1}e${e}`, `s${s2}e${n}`, `s${s1}e${n}`],
-      bare: [e, n, `e${e}`, `e${n}`, `ep${e}`, `ep${n}`]
+      pairs: [`s${s2}e${e}`, `s${s1}e${e}`],
+      bare: [e, `e${e}`, `e${n}`]
     };
   }
   static buildQueries(titles, episode, season, exclusions = []) {
