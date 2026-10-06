@@ -248,11 +248,12 @@ var index_default = new class NyaapiExtension {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
     }
     if (!media?.title) return [];
-    const titles = [...new Set(Object.values(media.title ?? {}).filter((t) => !!t)), ...media.synonyms ?? []];
+    const titles = [
+      ...new Set(Object.values(media.title ?? {}).filter((t) => !!t)),
+      ...media.synonyms ?? []
+    ].filter((t) => t && /^[\x20-\x7E]*$/.test(parsing_default.canon(t)));
     if (titles.length < 1) return [];
     let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
-    console.log(results);
-    console.log("what?");
     let scoredResults = this.scoreResults(results, titles, episode);
     let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
     return this.map(topResults);

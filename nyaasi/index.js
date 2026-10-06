@@ -11,14 +11,15 @@ export default new class NyaapiExtension {
 
         if (!media?.title) return []
 
-        const titles = [...new Set(Object.values(media.title ?? {}).filter(t => !!t)), ...(media.synonyms ?? [])]
+        const titles = [
+            ...new Set(Object.values(media.title ?? {}).filter(t => !!t)), 
+            ...(media.synonyms ?? [])
+        ].filter(t => t && /^[\x20-\x7E]*$/.test(Parser.canon(t)))
 
         if(titles.length < 1) return []
 
         let results = await API.findTorrentResults(titles, episode, exclusions, options)
 
-        console.log(results)
-        console.log("what?")
         let scoredResults = this.scoreResults(results, titles, episode)
 
         let topResults = scoredResults
