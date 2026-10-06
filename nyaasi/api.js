@@ -35,7 +35,7 @@ class API {
         const res = await fetch(`${apiUrl}/api/search`, {
             method: "POST",
             headers,
-            body: JSON.stringify({ term: query, pageSize: 100, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 2 }),
+            body: JSON.stringify({ term: query, pageSize: 100, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 1 }),
         })
 
         if (!res.ok) {
