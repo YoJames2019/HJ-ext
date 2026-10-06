@@ -273,28 +273,6 @@ var Scoring = class {
     }
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
-};
-var scoring_default = Scoring;
-
-// nyaasi/index.js
-var index_default = new class NyaapiExtension {
-  SCORE_THRESH = 0.95;
-  async single({ media, episode, episodeCount, exclusions }, options) {
-    if (!options.apiUrl) {
-      throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
-    }
-    if (!media?.title) return [];
-    const titles = [
-      ...new Set(Object.values(media.title ?? {}).filter((t) => !!t)),
-      ...media.synonyms ?? []
-    ].filter((t) => t && /^[\x20-\x7E]*$/.test(parsing_default.canon(t)));
-    if (titles.length < 1) return [];
-    let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
-    const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
-    let scoredResults = this.scoreResults(results, titles, episode, episodic);
-    let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
-    return this.map(topResults);
-  }
   scoreResults(results, titles, wantedEpisode, episodic) {
     let wantedSeason = 1;
     if (episodic) {
@@ -338,8 +316,30 @@ var index_default = new class NyaapiExtension {
       if (sequel) return { JWScore, contained, sequel };
     }
     contained = Math.min(compactVariant.length, compactRelease.length) >= 6 && (releasePhrase.includes(variantPhrase) || variantPhrase.includes(releasePhrase));
-    JWScore = scoring_default.jaroWinkler(compactVariant, compactRelease);
+    JWScore = this.jaroWinkler(compactVariant, compactRelease);
     return { JWScore, contained, sequel };
+  }
+};
+var scoring_default = Scoring;
+
+// nyaasi/index.js
+var index_default = new class NyaapiExtension {
+  SCORE_THRESH = 0.95;
+  async single({ media, episode, episodeCount, exclusions }, options) {
+    if (!options.apiUrl) {
+      throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
+    }
+    if (!media?.title) return [];
+    const titles = [
+      ...new Set(Object.values(media.title ?? {}).filter((t) => !!t)),
+      ...media.synonyms ?? []
+    ].filter((t) => t && /^[\x20-\x7E]*$/.test(parsing_default.canon(t)));
+    if (titles.length < 1) return [];
+    let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
+    const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
+    let scoredResults = scoring_default.scoreResults(results, titles, episode, episodic);
+    let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
+    return this.map(topResults);
   }
   map(data) {
     return data.map((item) => ({
