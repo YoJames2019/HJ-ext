@@ -243,7 +243,7 @@ var scoring_default = Scoring;
 // nyaasi/index.js
 var index_default = new class NyaapiExtension {
   SCORE_THRESH = 0.95;
-  async single({ media, episode, exclusions }, options) {
+  async single({ media, episode, episodeCount, exclusions }, options) {
     if (!options.apiUrl) {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
     }
@@ -254,23 +254,28 @@ var index_default = new class NyaapiExtension {
     ].filter((t) => t && /^[\x20-\x7E]*$/.test(parsing_default.canon(t)));
     if (titles.length < 1) return [];
     let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
-    let scoredResults = this.scoreResults(results, titles, episode);
+    const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
+    let scoredResults = this.scoreResults(results, titles, episode, episodic);
     let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
     return this.map(topResults);
   }
-  scoreResults(results, titles, wantedEpisode) {
-    let wantedSeason;
-    for (let title of titles) {
-      let season = parsing_default.parseSeason(title);
-      if (season) {
-        wantedSeason = season;
-        break;
+  scoreResults(results, titles, wantedEpisode, episodic) {
+    let wantedSeason = 1;
+    if (episodic) {
+      for (let title of titles) {
+        let season = parsing_default.parseSeason(title);
+        if (season) {
+          wantedSeason = season;
+          break;
+        }
       }
     }
     for (let index in results) {
       let result = results[index];
       const { episode, season } = parsing_default.parseEpisodeSeason(result.name);
-      if (wantedEpisode != null && episode !== wantedEpisode || wantedSeason > 1 && season !== wantedSeason) {
+      const episodeMismatch = episodic && wantedEpisode != null && episode !== wantedEpisode;
+      const seasonMismatch = episodic && (wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1);
+      if (episodeMismatch || seasonMismatch) {
         results[index].accScore = 0;
         continue;
       }
