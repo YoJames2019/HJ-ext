@@ -106,8 +106,8 @@ export default new class ApiClient {
 
     if (!Array.isArray(titles)) titles = [titles]
 
-    let seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}", "{num} {sep}", "S{2num}{sep}"]
-    let episodeSeparators = ["E", " - "]
+    const seasonVariations = ["{num}{suffix} Season {sep}", "S{num}{sep}", "Season {num} {sep}", "{num} {sep}", "S{numpad2}{sep}"]
+    const episodeSeparators = ["E", " - "]
 
     let processTitles = []
 
@@ -118,7 +118,7 @@ export default new class ApiClient {
 
     const cleanTitleRegex = /[^a-zA-Z0-9 -,']/g
 
-    for (let title of titles) {
+    for (const title of titles) {
       processTitles.push(title)
 
       if (cleanTitleRegex.test(title)) {
@@ -130,10 +130,18 @@ export default new class ApiClient {
       }
     }
 
-    for (let title of processTitles) {
-      for (let variationTemplate of seasonVariations) {
-        let variationStr = variationTemplate.replace("{num}", seasonNumber).replace("{2num}", String(seasonNumber).padStart(2, "0")).replace("{suffix}", this.getSuffix(seasonNumber))
-        let str = `${title} ${variationStr}`
+    const seasonNumberRegex = /\{num(?:pad(?<padAmount>\d+))?\}/g
+    for (const title of processTitles) {
+      for (const variationTemplate of seasonVariations) {
+
+        const variationStr = variationTemplate
+            .replace(
+                seasonNumberRegex, 
+                (_match, pad) => String(seasonNumber).padStart(pad ?? 0, "0")
+            )
+            .replace("{suffix}", this.getSuffix(seasonNumber))
+
+        const str = `${title} ${variationStr}`
         seasonCombos.push(str)
       }
 
@@ -142,8 +150,8 @@ export default new class ApiClient {
       }
     }
 
-    for (let separator of episodeSeparators) {
-      for (let comboIndex in seasonCombos) {
+    for (const separator of episodeSeparators) {
+      for (const comboIndex in seasonCombos) {
         finalCombos.push(`${seasonCombos[comboIndex].replace("{sep}", separator)}${String(episode).padStart(2, "0")} `.replace(/[ ]{2,}/g, " "))
       }
     }
