@@ -193,7 +193,7 @@ var API = class {
       for (const title of [raw, base]) {
         add(title);
         const noSeason = parsing_default.stripSeason(title);
-        if (noSeason && noSeason !== title) {
+        if (noSeason && noSeason !== title && parsing_default.parsePart(noSeason) === parsing_default.parsePart(title)) {
           add(noSeason);
         }
       }

@@ -58,7 +58,7 @@ class API {
             for (const title of [raw, base]) {
                 add(title)                                                // raw / base
                 const noSeason = Parser.stripSeason(title)
-                if (noSeason && noSeason !== title) {
+                if (noSeason && noSeason !== title && Parser.parsePart(noSeason) === Parser.parsePart(title)) {
                     add(noSeason)                                       // "Clevatess Season 2" -> "Clevatess"
                 }
             }
