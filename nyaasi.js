@@ -116,18 +116,17 @@ export default new class ApiClient {
 
     if (!seasonNumber) seasonNumber = 1
 
-    const cleanTitleRegex = /[^a-zA-Z0-9 -,']/
+    const cleanTitleRegex = /[^a-zA-Z0-9 ,'-]/
+    const isDirty  = (s) => cleanTitleRegex.test(s);
+    const stripJunk = (s) => s.replace(new RegExp(cleanTitleRegex.source, "g"), "");
 
     for (let title of titles) {
       processTitles.push(title)
 
-      if (cleanTitleRegex.test(title)) {
-        if (title.includes(":")) {
-          title = title.split(":")[0]
-        }
+      if(!isDirty(title)) continue;
+      const shortTitle = title.split(": ")[0].trim()
 
-        titles.push(title.replace(cleanTitleRegex, ''))
-      }
+      if(shortTitle.length >= 8 || /\s/.test(shortTitle )) titles.push(stripJunk(shortTitle))
     }
 
     const seasonNumberRegex = /\{num(?:pad(\d+))?\}/g
