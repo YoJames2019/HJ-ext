@@ -1,6 +1,46 @@
 [
   {
     "manifestVersion": 2,
+    "name": "NyaaV2",
+    "id": "nyaasiJV2",
+    "version": "0.1.0",
+    "type": "torrent",
+    "accuracy": "medium",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "nsfw": false,
+    "icon": "https://nyaa.si/static/favicon.png",
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/dist/nyaasiJ.js",
+    "options": {
+      "apiUrl": {
+        "type": "string",
+        "description": "Nyaapi instance url",
+        "default": ""
+      },
+      "apiKey": {
+        "type": "string",
+        "description": "API Key",
+        "default": ""
+      },
+      "resultsLimit": {
+        "type": "number",
+        "description": "Results to show",
+        "default": 5
+      },
+      "filter": {
+        "type": "select",
+        "description":"What types of torrents to show",
+        "values": ["Any", "No remakes", "Trusted only"],
+        "default": "No remakes"
+      }
+    }
+  },
+  {
+    "manifestVersion": 2,
     "name": "Nyaa",
     "id": "nyaasiJ",
     "version": "3.2.2",

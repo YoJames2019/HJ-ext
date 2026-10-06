@@ -1,0 +1,11 @@
+#!/bin/sh          
+set -e             
+
+# skip when nothing relevant is staged   
+if ! git diff --cached --name-only | grep -qE                                        
+'^nyaasi/|^build\.mjs$|^package\.json$'; then                                          
+    exit 0           
+fi                 
+
+npm run build      
+git add dist/  
