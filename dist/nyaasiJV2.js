@@ -144,10 +144,13 @@ var API = class {
     "No remakes": 1,
     "Trusted only": 2
   };
-  static async findTorrentResults(titles, epNum, exclusions, extensionOpts) {
-    let query = this.buildSearchQuery(titles, epNum, exclusions);
-    let data = await this.fetchData(query, extensionOpts);
-    return data;
+  static async findTorrentResults(titles, episode, exclusions, extensionOpts, season) {
+    const pages = await Promise.all(
+      this.buildQueries(titles, episode, season, exclusions).map((query) => this.fetchData(query, extensionOpts))
+    );
+    const byHash = /* @__PURE__ */ new Map();
+    for (const row of pages.flat()) if (row?.hash) byHash.set(row.hash, row);
+    return [...byHash.values()];
   }
   static async fetchData(query, extensionOpts) {
     const apiUrl = extensionOpts.apiUrl.replace(/\/+$/, "");
@@ -173,29 +176,47 @@ var API = class {
     if (!Array.isArray(data)) return [];
     return data;
   }
-  static buildSearchQuery(titles, episode, exclusions = []) {
-    let queryParts = [];
-    const titleVariants = titles.filter((t) => parsing_default.compact(t).length > 0).map((v) => `"${parsing_default.spaced(v)}"`);
-    queryParts.push(titleVariants.join("|"));
-    if (episode != null && episode != void 0) {
-      const paddedEpisode = String(episode).padStart(2, "0");
-      const wantedSeason = parsing_default.findWantedSeason(titles);
-      const seasonNum = wantedSeason ?? 1;
-      const paddedSeason = String(seasonNum).padStart(2, "0");
-      const episodeVariants = [.../* @__PURE__ */ new Set([
-        `${paddedEpisode}`,
-        `e${paddedEpisode}`,
-        `e${episode}`,
-        `ep${paddedEpisode}`,
-        `ep${episode}`,
-        `s${paddedSeason}e${paddedEpisode}`,
-        `s${seasonNum}e${paddedEpisode}`
-      ])];
-      queryParts.push(`(${episodeVariants.join("|")})`);
+  static getTitleVariants(titles) {
+    const out = /* @__PURE__ */ new Set();
+    const add = (t) => {
+      t = t && t.trim();
+      if (t) out.add(t);
+    };
+    for (const raw of titles) {
+      if (!raw) continue;
+      const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0];
+      for (const t of [raw, base]) {
+        add(t);
+        const noSeason = parsing_default.stripSeason(t);
+        if (noSeason && noSeason !== t) {
+          add(noSeason);
+          const franchise = noSeason.split(/\s+/)[0];
+          if (franchise.length >= 4) add(franchise);
+        }
+      }
     }
-    const excludedTerms = exclusions.flatMap((exclusion) => parsing_default.spaced(exclusion).split(/\s+/)).filter(Boolean).map((term) => `-${term}`);
-    if (excludedTerms.length > 0) queryParts.push(excludedTerms.join(" "));
-    return queryParts.join(" ").trim();
+    return [...out];
+  }
+  static getEpisodeVariants(episode, season) {
+    const n = String(episode);
+    const e = n.padStart(2, "0");
+    const s1 = String(season ?? 1);
+    const s2 = s1.padStart(2, "0");
+    return {
+      pairs: [`s${s2}e${e}`, `s${s1}e${e}`, `s${s2}e${n}`, `s${s1}e${n}`],
+      bare: [e, n, `e${e}`, `e${n}`, `ep${e}`, `ep${n}`]
+    };
+  }
+  static buildQueries(titles, episode, season, exclusions = []) {
+    const titlePhrases = this.titleVariants(titles).filter((t) => parsing_default.compact(t).length > 0).map((t) => `"${parsing_default.spaced(t)}"`).join("|");
+    const exclude = exclusions.flatMap((x) => parsing_default.spaced(x).split(/\s+/)).filter(Boolean).map((t) => `-${t}`).join(" ");
+    const withEx = (q) => exclude ? `${q} ${exclude}` : q;
+    if (episode == null) return [withEx(titlePhrases)];
+    const { pairs, bare } = this.episodeForms(episode, season);
+    return [
+      withEx(`${titlePhrases} (${[...new Set(pairs)].join("|")})`),
+      withEx(`${titlePhrases} (${[...new Set(bare)].join("|")})`)
+    ];
   }
 };
 var api_default = API;
