@@ -23,7 +23,7 @@ export default new class NyaapiExtension {
             .filter(res => res.hash && res.magnet)
             .filter(res => res.accScore >= this.SCORE_THRESH)
             .sort((a, b) => b.accScore - a.accScore)
-            .slice(0, options.resultsLimit ?? 10)
+            .slice(0, Number(options.resultsLimit) || 10)
 
         return this.map(topResults)
     }
