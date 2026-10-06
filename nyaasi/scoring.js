@@ -70,10 +70,7 @@ class Scoring {
     static scoreResults(results, titles, wantedEpisode) {
         const hasEpisode = wantedEpisode != null
 
-        let wantedSeason = 1;
-        if (hasEpisode) {
-            wantedSeason = Parser.findWantedSeason(titles)
-        }
+        let wantedSeason = Parser.findWantedSeason(titles) ?? 1
 
         for (let index in results) {
             let result = results[index]
@@ -81,9 +78,8 @@ class Scoring {
 
             const episodeMismatch = hasEpisode && episode !== wantedEpisode
 
-            const seasonMismatch = hasEpisode && (
-                wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1
-            )
+            const seasonMismatch = wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1
+
 
             if (episodeMismatch || seasonMismatch) {
                 results[index].accScore = 0;

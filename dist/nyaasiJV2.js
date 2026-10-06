@@ -271,15 +271,12 @@ var Scoring = class {
   }
   static scoreResults(results, titles, wantedEpisode) {
     const hasEpisode = wantedEpisode != null;
-    let wantedSeason = 1;
-    if (hasEpisode) {
-      wantedSeason = parsing_default.findWantedSeason(titles);
-    }
+    let wantedSeason = parsing_default.findWantedSeason(titles) ?? 1;
     for (let index in results) {
       let result = results[index];
       const { episode, season } = parsing_default.parseEpisodeSeason(result.name);
       const episodeMismatch = hasEpisode && episode !== wantedEpisode;
-      const seasonMismatch = hasEpisode && (wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1);
+      const seasonMismatch = wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1;
       if (episodeMismatch || seasonMismatch) {
         results[index].accScore = 0;
         continue;
