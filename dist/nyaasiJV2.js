@@ -305,7 +305,7 @@ var Scoring = class {
         }
       }
       const strippedScoreWeight = 0.5;
-      const containedScore = contained ? 1 : 0;
+      const containedScore = contained ? 1.5 : 0;
       const finalScore = fullTitleScore + containedScore + strippedTitleScore * strippedScoreWeight;
       results[index].accScore = finalScore;
     }
@@ -336,7 +336,7 @@ var scoring_default = Scoring;
 
 // nyaasi/index.js
 var index_default = new class NyaapiExtension {
-  SCORE_THRESH = 0.95;
+  SCORE_THRESH = 1.425;
   async single({ media, episode, episodeCount, exclusions }, options) {
     if (!options.apiUrl) {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
@@ -363,7 +363,7 @@ var index_default = new class NyaapiExtension {
       seeders: parseInt(item.seeders || "0"),
       leechers: parseInt(item.leechers || "0"),
       downloads: parseInt(item.completed || "0"),
-      accuracy: item.accScore > 0.95 ? "high" : "medium",
+      accuracy: item.accScore > this.SCORE_THRESH ? "high" : "medium",
       hash: item.hash || "",
       size: parsing_default.parseFileSize(item.filesize),
       date: new Date(item.date),

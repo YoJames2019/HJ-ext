@@ -106,7 +106,7 @@ class Scoring {
             }
 
             const strippedScoreWeight = 0.5
-            const containedScore = contained ? 1 : 0
+            const containedScore = contained ? 1.5 : 0
 
             const finalScore = fullTitleScore + containedScore + (strippedTitleScore * strippedScoreWeight)
 
