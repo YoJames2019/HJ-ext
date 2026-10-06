@@ -174,8 +174,6 @@ var API = class {
       const paddedEpisode = String(episode).padStart(2, "0");
       const episodeVariants = [.../* @__PURE__ */ new Set([
         `${paddedEpisode}`,
-        `s${paddedEpisode}`,
-        `s${episode}`,
         `e${paddedEpisode}`,
         `e${episode}`,
         `ep${paddedEpisode}`,

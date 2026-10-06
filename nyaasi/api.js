@@ -71,8 +71,6 @@ class API {
     
             const episodeVariants = [...new Set([
                 `${paddedEpisode}`,
-                `s${paddedEpisode}`,
-                `s${episode}`,
                 `e${paddedEpisode}`,
                 `e${episode}`,
                 `ep${paddedEpisode}`,
