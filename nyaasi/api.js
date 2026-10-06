@@ -81,7 +81,7 @@ class API {
     }
 
     static buildQueries(titles, episode, season, exclusions = []) {
-        const titlePhrases = this.titleVariants(titles)
+        const titlePhrases = this.getTitleVariants(titles)
             .filter(t => Parser.compact(t).length > 0)
             .map(t => `"${Parser.spaced(t)}"`)
             .join("|")
@@ -91,7 +91,7 @@ class API {
 
         if (episode == null) return [withEx(titlePhrases)]
 
-        const { pairs, bare } = this.episodeForms(episode, season)
+        const { pairs, bare } = this.getEpisodeVariants(episode, season)
         return [
             withEx(`${titlePhrases} (${[...new Set(pairs)].join("|")})`),
             withEx(`${titlePhrases} (${[...new Set(bare)].join("|")})`),

@@ -208,11 +208,11 @@ var API = class {
     };
   }
   static buildQueries(titles, episode, season, exclusions = []) {
-    const titlePhrases = this.titleVariants(titles).filter((t) => parsing_default.compact(t).length > 0).map((t) => `"${parsing_default.spaced(t)}"`).join("|");
+    const titlePhrases = this.getTitleVariants(titles).filter((t) => parsing_default.compact(t).length > 0).map((t) => `"${parsing_default.spaced(t)}"`).join("|");
     const exclude = exclusions.flatMap((x) => parsing_default.spaced(x).split(/\s+/)).filter(Boolean).map((t) => `-${t}`).join(" ");
     const withEx = (q) => exclude ? `${q} ${exclude}` : q;
     if (episode == null) return [withEx(titlePhrases)];
-    const { pairs, bare } = this.episodeForms(episode, season);
+    const { pairs, bare } = this.getEpisodeVariants(episode, season);
     return [
       withEx(`${titlePhrases} (${[...new Set(pairs)].join("|")})`),
       withEx(`${titlePhrases} (${[...new Set(bare)].join("|")})`)
