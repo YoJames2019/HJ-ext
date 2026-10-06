@@ -83,6 +83,11 @@ var Parser = class {
     if (previous === "part" || previous === "cour") return null;
     return last ? this.romanSeason(last) : null;
   }
+  static parsePart(title) {
+    const PART_REGEX = /\b(?:cour|part)\s*(\d{1,2})\b/;
+    const match = PART_REGEX.exec(this.canon(title));
+    return match ? Number(match[1]) : 1;
+  }
   static parseEpisode(text) {
     const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
     const EPISODE_CJK = /第\s*(\d+)\s*[话話]/;
@@ -127,6 +132,9 @@ var Parser = class {
   }
   static stripSeason(title) {
     return title.replace(/\b(?:the\s+)?final\s+season\b/gi, " ").replace(/\b(?:season|cour|part)\s*\d+\b/gi, " ").replace(/\b\d+(?:st|nd|rd|th)\s+season\b/gi, " ").replace(/\s+\b(?:i{1,3}|iv|v|vi{1,3}|ix|x)\b\s*$/i, "").replace(/\s{2,}/g, " ").trim();
+  }
+  static findWantedPart(titles) {
+    return Math.max(1, titles.map((title) => this.parsePart(title)));
   }
   static findWantedSeason(titles) {
     for (const title of titles) {
@@ -265,7 +273,7 @@ var Scoring = class {
     }
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
-  static scoreResults(results, titles, wantedEpisode) {
+  static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
     const hasEpisode = wantedEpisode != null;
     let wantedSeason = parsing_default.findWantedSeason(titles) ?? 1;
     for (let index in results) {
@@ -273,7 +281,8 @@ var Scoring = class {
       const { episode, season } = parsing_default.parseEpisodeSeason(result.name);
       const episodeMismatch = hasEpisode && episode !== wantedEpisode;
       const seasonMismatch = wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1;
-      if (episodeMismatch || seasonMismatch) {
+      const partMismatch = parsing_default.parsePart(parsing_default.extractReleaseTitle(result.name)) !== wantedPart;
+      if (episodeMismatch || seasonMismatch || partMismatch) {
         results[index].accScore = 0;
         continue;
       }
@@ -326,10 +335,11 @@ var index_default = new class NyaapiExtension {
     ].filter((title) => title && /^[\x20-\x7E]*$/.test(parsing_default.canon(title)));
     if (titles.length < 1) return [];
     const seasonNum = parsing_default.findWantedSeason(titles);
+    const partNum = parsing_default.findWantedPart(titles);
     const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
     episode = episodic ? episode : null;
     let results = await api_default.findTorrentResults(titles, seasonNum, episode, exclusions, options);
-    let scoredResults = scoring_default.scoreResults(results, titles, episode);
+    let scoredResults = scoring_default.scoreResults(results, titles, episode, partNum);
     let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
     return this.map(topResults);
   }

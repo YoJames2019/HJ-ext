@@ -67,7 +67,7 @@ class Scoring {
         return jaro + (commonPrefix * 0.1) * (1 - jaro)
     }
 
-    static scoreResults(results, titles, wantedEpisode) {
+    static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
         const hasEpisode = wantedEpisode != null
         let wantedSeason = Parser.findWantedSeason(titles) ?? 1
 
@@ -79,8 +79,9 @@ class Scoring {
 
             const seasonMismatch = wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1
 
+            const partMismatch = Parser.parsePart(Parser.extractReleaseTitle(result.name)) !== wantedPart
 
-            if (episodeMismatch || seasonMismatch) {
+            if (episodeMismatch || seasonMismatch || partMismatch) {
                 results[index].accScore = 0;
                 continue;
             }

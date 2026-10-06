@@ -75,13 +75,19 @@ class Parser {
         if ((match = SEASON_WORD.exec(text))) return Number(match[1]);
         if ((match = SEASON_ORDINAL.exec(text))) return Number(match[1]);
         if ((match = SEASON_PREFIX.exec(text))) return Number(match[1]);
-                        
-        const head = text.split(/\s*[:–—]\s+|\s+-\s+/)[0]                                          
-        const words = head.split(/\s+/).filter(Boolean)                                            
-        const last = words.pop()              
-        const previous = words.pop()          
-        if (previous === "part" || previous === "cour") return null                                
-        return last ? this.romanSeason(last) : null  
+
+        const head = text.split(/\s*[:–—]\s+|\s+-\s+/)[0]
+        const words = head.split(/\s+/).filter(Boolean)
+        const last = words.pop()
+        const previous = words.pop()
+        if (previous === "part" || previous === "cour") return null
+        return last ? this.romanSeason(last) : null
+    }
+
+    static parsePart(title) {
+        const PART_REGEX = /\b(?:cour|part)\s*(\d{1,2})\b/
+        const match = PART_REGEX.exec(this.canon(title))
+        return match ? Number(match[1]) : 1   // no qualifier means the first cour/part                   
     }
 
     static parseEpisode(text) {
@@ -129,7 +135,7 @@ class Parser {
         if (!match) return 0;
         return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));
     }
-    
+
     static stripSeason(title) {
         return title
             .replace(/\b(?:the\s+)?final\s+season\b/gi, " ")
@@ -138,6 +144,10 @@ class Parser {
             .replace(/\s+\b(?:i{1,3}|iv|v|vi{1,3}|ix|x)\b\s*$/i, "")
             .replace(/\s{2,}/g, " ")
             .trim()
+    }
+
+    static findWantedPart(titles) {
+        return Math.max(1, titles.map(title => this.parsePart(title)))
     }
 
     static findWantedSeason(titles) {
