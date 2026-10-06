@@ -38,5 +38,22 @@
         "default": "No remakes"
       }
     }
+  },
+  {
+    "manifestVersion": 2,
+    "name": "NekoBT",
+    "id": "nekobt",
+    "version": "1.0.1",
+    "type": "torrent",
+    "accuracy": "high",
+    "ratio": 0,
+    "media": "sub",
+    "languages": [
+      "US"
+    ],
+    "url": "aHR0cHM6Ly9uZWtvYnQudG8vYXBpL3YxLw==",
+    "icon": "https://nekobt.to/cdn/pfp/null/64",
+    "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/nekobt.js"
   }
 ]
