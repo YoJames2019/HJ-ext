@@ -193,7 +193,7 @@ var api_default = API;
 var Scoring = class {
   static jaroWinkler(first, second) {
     if (first === second) return 1;
-    if (!first.length || second.length) return 0;
+    if (!first.length || !second.length) return 0;
     const matchWindow = Math.max(
       0,
       Math.floor(

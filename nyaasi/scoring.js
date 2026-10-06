@@ -1,7 +1,7 @@
 class Scoring {
     static jaroWinkler(first, second) {
         if (first === second) return 1;
-        if (!first.length || second.length) return 0;
+        if (!first.length || !second.length) return 0;
 
         // match window size
         const matchWindow = Math.max(0,
