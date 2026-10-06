@@ -21,7 +21,7 @@ var Parser = class {
   static compact = (str) => this.canon(str).replace(/[^a-z0-9]+/g, "");
   static spaced = (str) => this.canon(str).replace(/[^a-z0-9]+/g, " ").trim();
   static extractReleaseTitle(name) {
-    const METADATA_MARKER = /\bS\d{1,2}E\d{1,4}\b|\bS\d{1,2}\b|\bE(?:P)?\d{1,4}\b|-\s*\d{1,4}\b|第\d+话|\b\d{1,4}[-~–]\d{1,4}\b|\b(?:complete|batch|seasons?|cour)\b|[\[(]/i;
+    const METADATA_MARKER = /\bS\d{1,2}E\d{1,4}\b|\bS\d{1,2}\b|\bE(?:P)?\d{1,4}\b|-\s*\d{1,4}\b|第\d+话|\b\d{1,4}[-~–]\d{1,4}\b|\b(?:complete|batch|cour)\b|[\[(]/i;
     let realTitle = name;
     for (let pass = 0; pass < 2; pass++) {
       realTitle = realTitle.replace(/^\s*[\[(][^\])]*[\])]\s*/, "");
@@ -189,8 +189,6 @@ var API = class {
         const noSeason = parsing_default.stripSeason(title);
         if (noSeason && noSeason !== title) {
           add(noSeason);
-          const franchise = noSeason.split(/\s+/)[0];
-          if (franchise.length >= 4) add(franchise);
         }
       }
     }

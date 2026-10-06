@@ -69,7 +69,6 @@ class Scoring {
 
     static scoreResults(results, titles, wantedEpisode) {
         const hasEpisode = wantedEpisode != null
-
         let wantedSeason = Parser.findWantedSeason(titles) ?? 1
 
         for (let index in results) {

@@ -60,8 +60,6 @@ class API {
                 const noSeason = Parser.stripSeason(title)
                 if (noSeason && noSeason !== title) {
                     add(noSeason)                                       // "Clevatess Season 2" -> "Clevatess"
-                    const franchise = noSeason.split(/\s+/)[0]
-                    if (franchise.length >= 4) add(franchise)           // "Clevatess"
                 }
             }
         }
