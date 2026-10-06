@@ -17,7 +17,7 @@ var Parser = class {
     [4, "iv"],
     [1, "i"]
   ];
-  static canon = (str) => str.normalize("NFKD").replace(/p{M}/gu, "").toLowerCase();
+  static canon = (str) => str.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
   static compact = (str) => this.canon(str).replace(/[^a-z0-9]+/g, "");
   static spaced = (str) => this.canon(str).replace(/[^a-z0-9]+/g, " ").trim();
   static extractReleaseTitle(name) {
@@ -68,23 +68,22 @@ var Parser = class {
     if (value < 2 || value > 20) return null;
     return this.toRoman(value) === token ? value : null;
   }
-  static parseSeason(text) {
+  static parseSeason(title) {
+    const text = this.canon(title);
     const SEASON_WORD = /\bseason\s*(\d{1,2})\b/;
     const SEASON_ORDINAL = /\b(\d{1,2})(?:st|nd|rd|th)\s+season\b/;
     const SEASON_PREFIX = /\bs(\d{1,2})\b/;
-    const FINAL_SEASON = /\bfinal\s+season\b/;
     const PART_WORD = /\b(?:part|cour)\s*$/;
     let match;
-    if (match = SEASON_WORD.exec(text)) return { season: Number(match[1]), finalSeason: false };
-    if (match = SEASON_ORDINAL.exec(text)) return { season: Number(match[1]), finalSeason: false };
-    if (match = SEASON_PREFIX.exec(text)) return { season: Number(match[1]), finalSeason: false };
-    if (FINAL_SEASON.test(text)) return { season: null, finalSeason: true };
+    if (match = SEASON_WORD.exec(text)) return Number(match[1]);
+    if (match = SEASON_ORDINAL.exec(text)) return Number(match[1]);
+    if (match = SEASON_PREFIX.exec(text)) return Number(match[1]);
     let roman = null;
     for (const token of text.matchAll(this._ROMAN_TOKEN)) {
       if (PART_WORD.test(text.slice(0, token.index))) continue;
       roman = this.romanSeason(token[1]) ?? roman;
     }
-    return { seasonStr: roman, seasonNum: this.fromRoman(roman), finalSeason: false };
+    return roman;
   }
   static parseEpisode(text) {
     const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
@@ -105,12 +104,12 @@ var Parser = class {
   }
   static parseEpisodeSeason(name) {
     const COMBINED_EPISODE = /\bs(\d{1,2})e(\d{1,4})(?:v\d+)?\b/;
-    const text = canon(name);
+    const text = this.canon(name);
     const combined = COMBINED_EPISODE.exec(text);
     if (combined) {
-      return { episode: Number(combined[2]), seasonStr: Number(combined[1]), seasonNum: Number(combined[1]), finalSeason: false };
+      return { episode: Number(combined[2]), season: Number(combined[1]), finalSeason: false };
     }
-    return { episode: this.parseEpisode(text), ...this.parseSeason(text) };
+    return { episode: this.parseEpisode(text), season: this.parseSeason(text) };
   }
   static parseFileSize(value) {
     const SIZE_UNITS = {
@@ -257,18 +256,18 @@ var index_default = new class NyaapiExtension {
     return this.map(scoredResults.filter((res) => res.accScore >= SCORE_THRESH || res.accOverride));
   }
   scoreResults(results, titles, wantedEpisode) {
-    let wantedSeasonNum;
+    let wantedSeason;
     for (let title of titles) {
-      let seasonData = parsing_default.parseSeason(title);
-      if (seasonData?.seasonNum) {
-        wantedSeasonNum = seasonData.seasonNum;
+      let season = parsing_default.parseSeason(title);
+      if (season) {
+        wantedSeason = season;
         break;
       }
     }
     for (let index in results) {
       let result = results[index];
-      const { episode, seasonNum } = parsing_default.parseEpisodeSeason(result.name);
-      if (wantedEpisode != null && episode !== wantedEpisode || wantedSeasonNum > 1 && seasonNum !== wantedSeasonNum) {
+      const { episode, season } = parsing_default.parseEpisodeSeason(result.name);
+      if (wantedEpisode != null && episode !== wantedEpisode || wantedSeason > 1 && season !== wantedSeason) {
         results[index].accScore = 0;
         continue;
       }

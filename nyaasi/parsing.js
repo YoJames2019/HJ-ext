@@ -7,7 +7,7 @@ class Parser {
     ];
 
 
-    static canon = (str) => str.normalize("NFKD").replace(/p{M}/gu, "").toLowerCase()
+    static canon = (str) => str.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase()
     static compact = (str) => this.canon(str).replace(/[^a-z0-9]+/g, "");
     static spaced = (str) => this.canon(str).replace(/[^a-z0-9]+/g, " ").trim();
 
@@ -65,18 +65,18 @@ class Parser {
         return this.toRoman(value) === token ? value : null;
     }
 
-    static parseSeason(text) {
+    static parseSeason(title) {
+        const text = this.canon(title)
+        
         const SEASON_WORD = /\bseason\s*(\d{1,2})\b/;
         const SEASON_ORDINAL = /\b(\d{1,2})(?:st|nd|rd|th)\s+season\b/;
         const SEASON_PREFIX = /\bs(\d{1,2})\b/;
-        const FINAL_SEASON = /\bfinal\s+season\b/;
         const PART_WORD = /\b(?:part|cour)\s*$/;
 
         let match;
-        if ((match = SEASON_WORD.exec(text))) return { season: Number(match[1]), finalSeason: false };
-        if ((match = SEASON_ORDINAL.exec(text))) return { season: Number(match[1]), finalSeason: false };
-        if ((match = SEASON_PREFIX.exec(text))) return { season: Number(match[1]), finalSeason: false };
-        if (FINAL_SEASON.test(text)) return { season: null, finalSeason: true };
+        if ((match = SEASON_WORD.exec(text))) return Number(match[1]);
+        if ((match = SEASON_ORDINAL.exec(text))) return Number(match[1]);
+        if ((match = SEASON_PREFIX.exec(text))) return Number(match[1]);
 
         // last valid roman wins, and one introduced by "part"/"cour" is a cour, not a season
         let roman = null;
@@ -84,7 +84,7 @@ class Parser {
             if (PART_WORD.test(text.slice(0, token.index))) continue;
             roman = this.romanSeason(token[1]) ?? roman;
         }
-        return { seasonStr: roman, seasonNum: this.fromRoman(roman), finalSeason: false };
+        return roman;
     }
 
     static parseEpisode(text) {
@@ -115,19 +115,19 @@ class Parser {
 
     static parseEpisodeSeason(name) {
         const COMBINED_EPISODE = /\bs(\d{1,2})e(\d{1,4})(?:v\d+)?\b/;
-        const text = canon(name);
+        const text = this.canon(name);
         const combined = COMBINED_EPISODE.exec(text);
         if (combined) {
-            return { episode: Number(combined[2]), seasonStr: Number(combined[1]), seasonNum: Number(combined[1]), finalSeason: false };
+            return { episode: Number(combined[2]), season: Number(combined[1]), finalSeason: false };
         }
-        return { episode: this.parseEpisode(text), ...this.parseSeason(text) };
+        return { episode: this.parseEpisode(text), season: this.parseSeason(text) };
     }
 
     static parseFileSize(value) {
         const SIZE_UNITS = {
             B: 1, KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12, KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3, TiB: 1024 ** 4
         };
-        
+
         const match = /^([\d.]+)\s*([A-Za-z]+)$/.exec(String(value).trim());
         if (!match) return 0;
         return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));

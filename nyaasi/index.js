@@ -24,21 +24,21 @@ export default new class NyaapiExtension {
 
     scoreResults(results, titles, wantedEpisode) {
 
-        let wantedSeasonNum;
+        let wantedSeason;
         for (let title of titles) {
-            let seasonData = Parser.parseSeason(title)
-            if (seasonData?.seasonNum) {
-                wantedSeasonNum = seasonData.seasonNum
+            let season = Parser.parseSeason(title)
+            if (season) {
+                wantedSeason = season
                 break;
             }
         }
 
         for (let index in results) {
             let result = results[index]
-            const { episode, seasonNum } = Parser.parseEpisodeSeason(result.name)
+            const { episode, season } = Parser.parseEpisodeSeason(result.name)
 
 
-            if ((wantedEpisode != null && episode !== wantedEpisode) || (wantedSeasonNum > 1 && seasonNum !== wantedSeasonNum)) {
+            if ((wantedEpisode != null && episode !== wantedEpisode) || (wantedSeason > 1 && season !== wantedSeason)) {
                 results[index].accScore = 0;
                 continue;
             }
