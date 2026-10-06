@@ -25,6 +25,41 @@ class Parser {
     }
 
 
+    static getTitleVariants(titles) {
+        const allVariants = new Map()
+        const addVariant = (title, isPrimary) => {
+            title = title && title.trim();
+            if (title && !allVariants.has(title)) allVariants.set(title, isPrimary)
+        }
+
+        for (const raw of titles) {
+            if (!raw) continue
+            const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0]        // subtitle dropped
+            for (const title of [raw, base]) {
+                addVariant(title, title === raw)
+                const noSeason = this.stripSeason(title)
+                if (noSeason && noSeason !== title && this.parsePart(noSeason) === this.parsePart(title)) {
+                    addVariant(noSeason, false)
+                }
+            }
+        }
+        return [...allVariants].map(([title, isPrimary]) => ({ title, isPrimary }))
+    }
+
+    static getEpisodeVariants(episode, season) {
+        const epNum = String(episode)
+        const paddedEpNum = epNum.padStart(2, "0")
+
+        season = String(season ?? 1)
+        const paddedSeason = season.padStart(2, "0")
+
+        return {
+            pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
+            bare: [paddedEpNum, `e${paddedEpNum}`],
+        }
+    }
+
+
     static getNumberSuffix(num) {
         num = Number(num)
         if (!Number.isFinite(num) || num <= 0) return ""

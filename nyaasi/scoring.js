@@ -1,4 +1,3 @@
-import API from "./api";
 import Parser from "./parsing";
 
 class Scoring {
@@ -69,7 +68,7 @@ class Scoring {
     }
 
     static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
-        const variants = API.getTitleVariants(titles)
+        const variants = Parser.getTitleVariants(titles)
 
         const hasEpisode = wantedEpisode != null
         let wantedSeason = Parser.findWantedSeason(titles) ?? 1

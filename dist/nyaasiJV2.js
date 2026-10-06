@@ -28,6 +28,35 @@ var Parser = class {
     const marker = METADATA_MARKER.exec(realTitle);
     return this.spaced(marker ? realTitle.slice(0, marker.index) : realTitle);
   }
+  static getTitleVariants(titles) {
+    const allVariants = /* @__PURE__ */ new Map();
+    const addVariant = (title, isPrimary) => {
+      title = title && title.trim();
+      if (title && !allVariants.has(title)) allVariants.set(title, isPrimary);
+    };
+    for (const raw of titles) {
+      if (!raw) continue;
+      const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0];
+      for (const title of [raw, base]) {
+        addVariant(title, title === raw);
+        const noSeason = this.stripSeason(title);
+        if (noSeason && noSeason !== title && this.parsePart(noSeason) === this.parsePart(title)) {
+          addVariant(noSeason, false);
+        }
+      }
+    }
+    return [...allVariants].map(([title, isPrimary]) => ({ title, isPrimary }));
+  }
+  static getEpisodeVariants(episode, season) {
+    const epNum = String(episode);
+    const paddedEpNum = epNum.padStart(2, "0");
+    season = String(season ?? 1);
+    const paddedSeason = season.padStart(2, "0");
+    return {
+      pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
+      bare: [paddedEpNum, `e${paddedEpNum}`]
+    };
+  }
   static getNumberSuffix(num) {
     num = Number(num);
     if (!Number.isFinite(num) || num <= 0) return "";
@@ -185,41 +214,12 @@ var API = class {
     if (!Array.isArray(data)) return [];
     return data;
   }
-  static getTitleVariants(titles) {
-    const allVariants = /* @__PURE__ */ new Map();
-    const addVariant = (title, isPrimary) => {
-      title = title && title.trim();
-      if (title && !allVariants.has(title)) allVariants.set(title, isPrimary);
-    };
-    for (const raw of titles) {
-      if (!raw) continue;
-      const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0];
-      for (const title of [raw, base]) {
-        addVariant(title, title === raw);
-        const noSeason = parsing_default.stripSeason(title);
-        if (noSeason && noSeason !== title && parsing_default.parsePart(noSeason) === parsing_default.parsePart(title)) {
-          addVariant(noSeason, false);
-        }
-      }
-    }
-    return [...allVariants].map(([title, isPrimary]) => ({ title, isPrimary }));
-  }
-  static getEpisodeVariants(episode, season) {
-    const epNum = String(episode);
-    const paddedEpNum = epNum.padStart(2, "0");
-    season = String(season ?? 1);
-    const paddedSeason = season.padStart(2, "0");
-    return {
-      pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
-      bare: [paddedEpNum, `e${paddedEpNum}`]
-    };
-  }
   static buildQueries(titles, season, episode, exclusions = []) {
-    const titlePhrases = this.getTitleVariants(titles).filter(({ title }) => parsing_default.compact(title).length > 0).map(({ title }) => `"${parsing_default.spaced(title)}"`).join("|");
+    const titlePhrases = parsing_default.getTitleVariants(titles).filter(({ title }) => parsing_default.compact(title).length > 0).map(({ title }) => `"${parsing_default.spaced(title)}"`).join("|");
     const excludeStr = exclusions.flatMap((exclusion) => parsing_default.spaced(exclusion).split(/\s+/)).filter(Boolean).map((term) => `-${term}`).join(" ");
     const withExclusions = (query) => excludeStr ? `${query} ${excludeStr}` : query;
     if (episode == null) return [{ term: withExclusions(titlePhrases) }];
-    const { pairs, bare } = this.getEpisodeVariants(episode, season);
+    const { pairs, bare } = parsing_default.getEpisodeVariants(episode, season);
     return [
       { term: withExclusions(`${titlePhrases} (${[...new Set(pairs)].join("|")})`), pageSize: 100 },
       { term: withExclusions(`${titlePhrases} (${[...new Set(bare)].join("|")})`), pageSize: 100 }
@@ -278,7 +278,7 @@ var Scoring = class {
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
   static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
-    const variants = api_default.getTitleVariants(titles);
+    const variants = parsing_default.getTitleVariants(titles);
     const hasEpisode = wantedEpisode != null;
     let wantedSeason = parsing_default.findWantedSeason(titles) ?? 1;
     for (let index in results) {
@@ -336,7 +336,8 @@ var scoring_default = Scoring;
 
 // nyaasi/index.js
 var index_default = new class NyaapiExtension {
-  SCORE_THRESH = 1.425;
+  SCORE_THRESH = 2.3;
+  HIGH_ACC_THRESH = 2.7;
   async single({ media, episode, episodeCount, exclusions }, options) {
     if (!options.apiUrl) {
       throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net");
@@ -363,7 +364,7 @@ var index_default = new class NyaapiExtension {
       seeders: parseInt(item.seeders || "0"),
       leechers: parseInt(item.leechers || "0"),
       downloads: parseInt(item.completed || "0"),
-      accuracy: item.accScore > this.SCORE_THRESH ? "high" : "medium",
+      accuracy: item.accScore > this.HIGH_ACC_THRESH ? "high" : "medium",
       accScore: item.accScore,
       hash: item.hash || "",
       size: parsing_default.parseFileSize(item.filesize),

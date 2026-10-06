@@ -10,8 +10,8 @@
  *   --url <url>      --key <key>       --filter <name>
  *   --limit <n>      --only <substr>   --entry <path>   --parser <path>
  *
- * The extension is imported from ./index.js. If that fails because the source uses
- * extensionless relative imports, it's bundled on the fly with esbuild.
+ * The extension is imported from the build output (default ../dist/nyaasiJV2.js).
+ * Run `npm run build` first; the suite does not build anything itself.
  *
  * ---------------------------------------------------------------------------
  * ADDING A CASE: append to CASES below.
@@ -34,7 +34,6 @@
  */
 
 import fs from 'node:fs'
-import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -48,7 +47,7 @@ const CONFIG = {
   limit: Number(arg('limit') ?? 20),
   delay: Number(arg('delay') ?? 300),
   only: (arg('only') ?? '').toLowerCase(),
-  entry: path.resolve(HERE, arg('entry') ?? 'index.js'),
+  entry: path.resolve(HERE, arg('entry') ?? '../dist/nyaasiJV2.js'),
   parser: path.resolve(HERE, arg('parser') ?? 'parsing.js'),
 }
 
@@ -93,23 +92,13 @@ const CASES = [
 // loading
 // ---------------------------------------------------------------------------
 async function loadExtension() {
-  try {
-    return {
-      ext: (await import(pathToFileURL(CONFIG.entry).href)).default,
-      Parser: (await import(pathToFileURL(CONFIG.parser).href)).default,
-    }
-  } catch {
-    const { build } = await import('esbuild')
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nyaasi-test-'))
-    const tmpEntry = path.join(dir, 'entry.mjs')
-    const out = path.join(dir, 'bundle.mjs')
-    fs.writeFileSync(tmpEntry,
-      `export { default } from ${JSON.stringify(CONFIG.entry)}\n` +
-      `export { default as Parser } from ${JSON.stringify(CONFIG.parser)}\n`)
-    await build({ entryPoints: [tmpEntry], bundle: true, format: 'esm', platform: 'neutral',
-      target: 'es2022', outfile: out, logLevel: 'silent' })
-    const mod = await import(pathToFileURL(out).href)
-    return { ext: mod.default, Parser: mod.Parser }
+  if (!fs.existsSync(CONFIG.entry)) {
+    throw new Error(`built extension not found at ${CONFIG.entry}\n` +
+      `run "npm run build" first, or pass --entry <path>`)
+  }
+  return {
+    ext: (await import(pathToFileURL(CONFIG.entry).href)).default,
+    Parser: (await import(pathToFileURL(CONFIG.parser).href)).default,
   }
 }
 
@@ -155,7 +144,7 @@ async function run() {
   const cases = CASES.filter(c => !c.skip && (!CONFIG.only || c.name.toLowerCase().includes(CONFIG.only)))
   let pass = 0, fail = 0, skipped = 0
 
-  console.log(`${pad('result', 6)} ${pad('case', 30)} ${pad('show / episode', 34)} detail`)
+  console.log(`${pad('result', 6)} ${pad('case', 30)} ${pad('show / episode', 34)} ${pad('acc hi/avg/lo', 24)} detail`)
   console.log('-'.repeat(110))
 
   for (const c of cases) {
@@ -172,6 +161,11 @@ async function run() {
     } catch (err) {
       fail++; console.log(`${pad('FAIL', 6)} ${pad(c.name, 30)} ${pad(titleOf(media), 34)} threw: ${err.message}`); continue
     }
+
+    const scores = out.map(o => Number(o.accScore)).filter(Number.isFinite)
+    const acc = scores.length
+      ? `hi ${Math.max(...scores).toFixed(2)} avg ${(scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2)} lo ${Math.min(...scores).toFixed(2)}`
+      : 'hi - avg - lo -'
 
     const problems = []
     const top = out[0]
@@ -195,11 +189,11 @@ async function run() {
 
     if (problems.length) {
       fail++
-      console.log(`${pad('FAIL', 6)} ${pad(c.name, 30)} ${pad(titleOf(media) + ' ep' + (episode ?? '-'), 34)} ${problems.join('; ')}`)
+      console.log(`${pad('FAIL', 6)} ${pad(c.name, 30)} ${pad(titleOf(media) + ' ep' + (episode ?? '-'), 34)} ${pad(acc, 24)} ${problems.join('; ')}`)
       if (top) console.log(`${' '.repeat(6)}     top: ${top.title.slice(0, 92)}`)
     } else {
       pass++
-      console.log(`${pad('ok', 6)} ${pad(c.name, 30)} ${pad(titleOf(media) + ' ep' + (episode ?? '-'), 34)} ${out.length} results  ${top ? top.title.slice(0, 44) : '(none)'}`)
+      console.log(`${pad('ok', 6)} ${pad(c.name, 30)} ${pad(titleOf(media) + ' ep' + (episode ?? '-'), 34)} ${pad(acc, 24)} ${out.length} results  ${top ? top.title.slice(0, 44) : '(none)'}`)
     }
 
     await sleep(CONFIG.delay)
