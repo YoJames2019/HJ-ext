@@ -3,7 +3,7 @@ import Parser from "./parsing"
 import Scoring from "./scoring"
 
 export default new class NyaapiExtension {
-    SCORE_THRESH = 0.95
+    SCORE_THRESH = 1.425
     async single({ media, episode, episodeCount, exclusions }, options) {
         if (!options.apiUrl) {
             throw new Error("You must specify the base url of the third party nyaa.si api you are using in settings\n\nExample (not functional): https://nyaasi.yourwebsite.net")
@@ -46,7 +46,7 @@ export default new class NyaapiExtension {
             seeders: parseInt(item.seeders || '0'),
             leechers: parseInt(item.leechers || '0'),
             downloads: parseInt(item.completed || '0'),
-            accuracy: item.accScore > 0.95 ? 'high' : 'medium',
+            accuracy: item.accScore > this.SCORE_THRESH ? 'high' : 'medium',
             hash: item.hash || '',
             size: Parser.parseFileSize(item.filesize),
             date: new Date(item.date),
