@@ -95,15 +95,16 @@ var Parser = class {
     const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
     const EPISODE_CJK = /第\s*(\d+)\s*[话話]/;
     const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})(?:v\d+)?\b/;
-    const BATCH_RANGE = /\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
+    const BATCH_RANGE = /(?<!\b(?:part|cour|season)\s)\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
     const BATCH_WORD = /\b(?:complete|batch|cour)\b/;
     const FILE_EXTENSION = /\.[a-z0-9]{2,4}$/;
     const TRAILING_NUMBER = /(\d{1,4})\s*$/;
     let match;
     if (match = EPISODE_PREFIX.exec(text)) return Number(match[1]);
     if (match = EPISODE_CJK.exec(text)) return Number(match[1]);
+    if (BATCH_RANGE.test(text)) return null;
     if (match = EPISODE_DASH.exec(text)) return Number(match[1]);
-    if (BATCH_RANGE.test(text) || BATCH_WORD.test(text)) return null;
+    if (BATCH_WORD.test(text)) return null;
     const stem = text.replace(FILE_EXTENSION, "");
     const trailing = TRAILING_NUMBER.exec(stem);
     return trailing && trailing[1].length <= 3 ? Number(trailing[1]) : null;
@@ -185,23 +186,23 @@ var API = class {
     return data;
   }
   static getTitleVariants(titles) {
-    const out = /* @__PURE__ */ new Set();
-    const add = (title) => {
+    const allVariants = /* @__PURE__ */ new Map();
+    const addVariant = (title, isPrimary) => {
       title = title && title.trim();
-      if (title) out.add(title);
+      if (title && !allVariants.has(title)) allVariants.set(title, isPrimary);
     };
     for (const raw of titles) {
       if (!raw) continue;
       const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0];
       for (const title of [raw, base]) {
-        add(title);
+        addVariant(title, title === raw);
         const noSeason = parsing_default.stripSeason(title);
         if (noSeason && noSeason !== title && parsing_default.parsePart(noSeason) === parsing_default.parsePart(title)) {
-          add(noSeason);
+          addVariant(noSeason, false);
         }
       }
     }
-    return [...out];
+    return [...allVariants].map(([title, isPrimary]) => ({ title, isPrimary }));
   }
   static getEpisodeVariants(episode, season) {
     const epNum = String(episode);
@@ -214,7 +215,7 @@ var API = class {
     };
   }
   static buildQueries(titles, season, episode, exclusions = []) {
-    const titlePhrases = this.getTitleVariants(titles).filter((title) => parsing_default.compact(title).length > 0).map((title) => `"${parsing_default.spaced(title)}"`).join("|");
+    const titlePhrases = this.getTitleVariants(titles).filter(({ title }) => parsing_default.compact(title).length > 0).map(({ title }) => `"${parsing_default.spaced(title)}"`).join("|");
     const excludeStr = exclusions.flatMap((exclusion) => parsing_default.spaced(exclusion).split(/\s+/)).filter(Boolean).map((term) => `-${term}`).join(" ");
     const withExclusions = (query) => excludeStr ? `${query} ${excludeStr}` : query;
     if (episode == null) return [{ term: withExclusions(titlePhrases) }];
@@ -277,6 +278,7 @@ var Scoring = class {
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
   static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
+    const variants = api_default.getTitleVariants(titles);
     const hasEpisode = wantedEpisode != null;
     let wantedSeason = parsing_default.findWantedSeason(titles) ?? 1;
     for (let index in results) {
@@ -289,15 +291,23 @@ var Scoring = class {
         results[index].accScore = 0;
         continue;
       }
-      let highestScore = 0;
+      let fullTitleScore = 0;
+      let strippedTitleScore = 0;
       let contained = false;
-      for (let title of titles) {
+      for (let { title, isPrimary } of variants) {
         let scoreData = this.scoreResult(title, result.name);
         if (scoreData.sequel) continue;
         if (scoreData.contained) contained = scoreData.contained;
-        if (scoreData.JWScore > highestScore) highestScore = scoreData.JWScore;
+        if (isPrimary) {
+          fullTitleScore = Math.max(fullTitleScore, scoreData.JWScore);
+        } else {
+          strippedTitleScore = Math.max(strippedTitleScore, scoreData.JWScore);
+        }
       }
-      results[index].accScore = highestScore + (contained ? 1 : 0);
+      const strippedScoreWeight = 0.5;
+      const containedScore = contained ? 1 : 0;
+      const finalScore = fullTitleScore + containedScore + strippedTitleScore * strippedScoreWeight;
+      results[index].accScore = finalScore;
     }
     return results;
   }

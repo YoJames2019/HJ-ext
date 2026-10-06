@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "npm run build -- --watch",
-    "prepare": "git config core.hooksPath .githooks || true"
+    "prepare": "git config core.hooksPath .githooks || true",
+    "test": "node --env-file=.env nyaasi/test.mjs"
   },
   "types": "index.d.ts",
   "devDependencies": {
