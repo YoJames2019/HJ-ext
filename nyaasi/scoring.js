@@ -1,3 +1,4 @@
+import API from "./api";
 import Parser from "./parsing";
 
 class Scoring {
@@ -68,6 +69,8 @@ class Scoring {
     }
 
     static scoreResults(results, titles, wantedEpisode, wantedPart = 1) {
+        const variants = API.getTitleVariants(titles)
+
         const hasEpisode = wantedEpisode != null
         let wantedSeason = Parser.findWantedSeason(titles) ?? 1
 
@@ -86,16 +89,28 @@ class Scoring {
                 continue;
             }
 
-            let highestScore = 0
+            let fullTitleScore = 0
+            let strippedTitleScore = 0
             let contained = false;
-            for (let title of titles) {
+            for (let { title, isPrimary } of variants) {
                 let scoreData = this.scoreResult(title, result.name)
                 if (scoreData.sequel) continue;
                 if (scoreData.contained) contained = scoreData.contained
-                if (scoreData.JWScore > highestScore) highestScore = scoreData.JWScore
+
+                if(isPrimary) {
+                    fullTitleScore = Math.max(fullTitleScore, scoreData.JWScore)
+                }
+                else {
+                    strippedTitleScore = Math.max(strippedTitleScore, scoreData.JWScore)
+                }
             }
 
-            results[index].accScore = highestScore + (contained ? 1 : 0)
+            const strippedScoreWeight = 0.5
+            const containedScore = contained ? 1 : 0
+
+            const finalScore = fullTitleScore + containedScore + (strippedTitleScore * strippedScoreWeight)
+
+            results[index].accScore = finalScore
         }
 
         return results

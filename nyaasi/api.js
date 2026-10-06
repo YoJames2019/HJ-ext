@@ -46,24 +46,24 @@ class API {
     }
 
     static getTitleVariants(titles) {
-        const out = new Set()
-        const add = title => { 
+        const allVariants = new Map()
+        const addVariant = (title, isPrimary) => { 
             title = title && title.trim(); 
-            if (title) out.add(title) 
+            if (title && !allVariants.has(title)) allVariants.set(title, isPrimary) 
         }
 
         for (const raw of titles) {
             if (!raw) continue
             const base = raw.split(/\s*[:–—]\s+|\s+-\s+/)[0]        // subtitle dropped
             for (const title of [raw, base]) {
-                add(title)                                                // raw / base
+                addVariant(title, title === raw)
                 const noSeason = Parser.stripSeason(title)
                 if (noSeason && noSeason !== title && Parser.parsePart(noSeason) === Parser.parsePart(title)) {
-                    add(noSeason)                                       // "Clevatess Season 2" -> "Clevatess"
+                    addVariant(noSeason, false)
                 }
             }
         }
-        return [...out]
+        return [...allVariants].map(([title, isPrimary]) => ({ title, isPrimary }))
     }
 
     static getEpisodeVariants(episode, season) {
@@ -81,8 +81,8 @@ class API {
 
     static buildQueries(titles, season, episode, exclusions = []) {
         const titlePhrases = this.getTitleVariants(titles)
-            .filter(title => Parser.compact(title).length > 0)
-            .map(title => `"${Parser.spaced(title)}"`)
+            .filter(({ title }) => Parser.compact(title).length > 0)
+            .map(({ title }) => `"${Parser.spaced(title)}"`)
             .join("|")
 
         const excludeStr = exclusions.flatMap(exclusion => Parser.spaced(exclusion).split(/\s+/)).filter(Boolean).map(term => `-${term}`).join(" ")
