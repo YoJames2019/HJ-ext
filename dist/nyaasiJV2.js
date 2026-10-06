@@ -88,7 +88,7 @@ var Parser = class {
   static parseEpisode(text) {
     const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
     const EPISODE_CJK = /第\s*(\d+)\s*[话話]/;
-    const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})\b/;
+    const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})(?:v\d+)?\b/;
     const BATCH_RANGE = /\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
     const BATCH_WORD = /\b(?:complete|batch|cour)\b/;
     const FILE_EXTENSION = /\.[a-z0-9]{2,4}$/;
@@ -147,9 +147,9 @@ var API = class {
     "No remakes": 1,
     "Trusted only": 2
   };
-  static async findTorrentResults(titles, episode, exclusions, extensionOpts, season) {
+  static async findTorrentResults(titles, season, episode, exclusions, extensionOpts) {
     const pages = await Promise.all(
-      this.buildQueries(titles, episode, season, exclusions).map((query) => this.fetchData(query, extensionOpts))
+      this.buildQueries(titles, season, episode, exclusions).map((query) => this.fetchData(query, extensionOpts))
     );
     const byHash = /* @__PURE__ */ new Map();
     for (const row of pages.flat()) if (row?.hash) byHash.set(row.hash, row);
@@ -164,15 +164,11 @@ var API = class {
     const res = await fetch(`${apiUrl}/api/search`, {
       method: "POST",
       headers,
-      body: JSON.stringify({ term: query, pageSize: 100, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 1 })
+      body: JSON.stringify({ term: query, pageSize: 200, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 1 })
     });
     if (!res.ok) {
-      if (res.status === 429) {
-        if (extensionOpts.apiKey !== "") {
-          throw new Error("Invalid or incorrect API key!");
-        }
-        throw new Error("You cannot access this api without authorization! If you have an API key, make sure to put it in the extension settings!");
-      }
+      if (res.status === 401 || res.status === 403) throw new Error("Missing or invalid API key. Set it in the extension settings.");
+      if (res.status === 429) throw new Error("Ratelimited by the API, try again later");
       return [];
     }
     const data = await res.json();
@@ -207,10 +203,10 @@ var API = class {
     const paddedSeason = season.padStart(2, "0");
     return {
       pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
-      bare: [paddedEpNum, `e${paddedEpNum}`, `e${epNum}`]
+      bare: [paddedEpNum, `e${paddedEpNum}`]
     };
   }
-  static buildQueries(titles, episode, season, exclusions = []) {
+  static buildQueries(titles, season, episode, exclusions = []) {
     const titlePhrases = this.getTitleVariants(titles).filter((title) => parsing_default.compact(title).length > 0).map((title) => `"${parsing_default.spaced(title)}"`).join("|");
     const excludeStr = exclusions.flatMap((exclusion) => parsing_default.spaced(exclusion).split(/\s+/)).filter(Boolean).map((term) => `-${term}`).join(" ");
     const withExclusions = (query) => excludeStr ? `${query} ${excludeStr}` : query;
@@ -273,16 +269,17 @@ var Scoring = class {
     }
     return jaro + commonPrefix * 0.1 * (1 - jaro);
   }
-  static scoreResults(results, titles, wantedEpisode, episodic) {
+  static scoreResults(results, titles, wantedEpisode) {
+    const hasEpisode = wantedEpisode != null;
     let wantedSeason = 1;
-    if (episodic) {
+    if (hasEpisode) {
       wantedSeason = parsing_default.findWantedSeason(titles);
     }
     for (let index in results) {
       let result = results[index];
       const { episode, season } = parsing_default.parseEpisodeSeason(result.name);
-      const episodeMismatch = episodic && wantedEpisode != null && episode !== wantedEpisode;
-      const seasonMismatch = episodic && (wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1);
+      const episodeMismatch = hasEpisode && episode !== wantedEpisode;
+      const seasonMismatch = hasEpisode && (wantedSeason > 1 ? season !== wantedSeason : season != null && season !== 1);
       if (episodeMismatch || seasonMismatch) {
         results[index].accScore = 0;
         continue;
@@ -335,9 +332,11 @@ var index_default = new class NyaapiExtension {
       ...media.synonyms ?? []
     ].filter((title) => title && /^[\x20-\x7E]*$/.test(parsing_default.canon(title)));
     if (titles.length < 1) return [];
-    let results = await api_default.findTorrentResults(titles, episode, exclusions, options);
+    const seasonNum = parsing_default.findWantedSeason(titles);
     const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1;
-    let scoredResults = scoring_default.scoreResults(results, titles, episode, episodic);
+    episode = episodic ? episode : null;
+    let results = await api_default.findTorrentResults(titles, seasonNum, episode, exclusions, options);
+    let scoredResults = scoring_default.scoreResults(results, titles, episode);
     let topResults = scoredResults.filter((res) => res.hash && res.magnet).filter((res) => res.accScore >= this.SCORE_THRESH).sort((a, b) => b.accScore - a.accScore).slice(0, Number(options.resultsLimit) || 10);
     return this.map(topResults);
   }
@@ -348,7 +347,7 @@ var index_default = new class NyaapiExtension {
       seeders: parseInt(item.seeders || "0"),
       leechers: parseInt(item.leechers || "0"),
       downloads: parseInt(item.completed || "0"),
-      accuracy: item.accScore > 0.95 || item.accOverride ? "high" : "medium",
+      accuracy: item.accScore > 0.95 ? "high" : "medium",
       hash: item.hash || "",
       size: parsing_default.parseFileSize(item.filesize),
       date: new Date(item.date),

@@ -91,7 +91,7 @@ class Parser {
 
         const EPISODE_PREFIX = /\be(?:p)?(\d{1,4})(?:v\d+)?\b/;
         const EPISODE_CJK = /第\s*(\d+)\s*[话話]/;
-        const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})\b/;
+        const EPISODE_DASH = /(?:^|[\s\])])[-–]\s*(\d{1,4})(?:v\d+)?\b/;
 
         const BATCH_RANGE = /\b\d{1,4}\s*[-~–]\s*\d{1,4}\b/;
         const BATCH_WORD = /\b(?:complete|batch|cour)\b/;

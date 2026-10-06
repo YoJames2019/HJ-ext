@@ -18,11 +18,15 @@ export default new class NyaapiExtension {
 
         if (titles.length < 1) return []
 
-        let results = await API.findTorrentResults(titles, episode, exclusions, options)
-
+        const seasonNum = Parser.findWantedSeason(titles)
         const episodic = media?.format !== "MOVIE" && (episodeCount ?? media?.episodes ?? 0) > 1
 
-        let scoredResults = Scoring.scoreResults(results, titles, episode, episodic)
+        episode = episodic ? episode : null
+
+        let results = await API.findTorrentResults(titles, seasonNum, episode, exclusions, options)
+
+
+        let scoredResults = Scoring.scoreResults(results, titles, episode)
 
         let topResults = scoredResults
             .filter(res => res.hash && res.magnet)
@@ -40,7 +44,7 @@ export default new class NyaapiExtension {
             seeders: parseInt(item.seeders || '0'),
             leechers: parseInt(item.leechers || '0'),
             downloads: parseInt(item.completed || '0'),
-            accuracy: item.accScore > 0.95 || item.accOverride ? 'high' : 'medium',
+            accuracy: item.accScore > 0.95 ? 'high' : 'medium',
             hash: item.hash || '',
             size: Parser.parseFileSize(item.filesize),
             date: new Date(item.date),

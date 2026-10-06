@@ -8,9 +8,9 @@ class API {
         "Trusted only": 2
     }
 
-    static async findTorrentResults(titles, episode, exclusions, extensionOpts, season) {
+    static async findTorrentResults(titles, season, episode, exclusions, extensionOpts) {
         const pages = await Promise.all(
-            this.buildQueries(titles, episode, season, exclusions)
+            this.buildQueries(titles, season, episode, exclusions)
                 .map(query => this.fetchData(query, extensionOpts))
         )
         const byHash = new Map()
@@ -29,17 +29,12 @@ class API {
         const res = await fetch(`${apiUrl}/api/search`, {
             method: "POST",
             headers,
-            body: JSON.stringify({ term: query, pageSize: 100, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 1 }),
+            body: JSON.stringify({ term: query, pageSize: 200, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 1 }),
         })
 
         if (!res.ok) {
-            if (res.status === 429) {
-                if (extensionOpts.apiKey !== "") {
-                    throw new Error("Invalid or incorrect API key!")
-                }
-                throw new Error("You cannot access this api without authorization! If you have an API key, make sure to put it in the extension settings!")
-            }
-
+            if (res.status === 401 || res.status === 403) throw new Error("Missing or invalid API key. Set it in the extension settings.")
+            if (res.status === 429) throw new Error("Ratelimited by the API, try again later")
             return []
         }
 
@@ -79,14 +74,14 @@ class API {
         
         season = String(season ?? 1)
         const paddedSeason = season.padStart(2, "0")
-        
+
         return {
             pairs: [`s${paddedSeason}e${paddedEpNum}`, `s${season}e${paddedEpNum}`],
-            bare: [paddedEpNum, `e${paddedEpNum}`, `e${epNum}`],
+            bare: [paddedEpNum, `e${paddedEpNum}`],
         }
     }
 
-    static buildQueries(titles, episode, season, exclusions = []) {
+    static buildQueries(titles, season, episode, exclusions = []) {
         const titlePhrases = this.getTitleVariants(titles)
             .filter(title => Parser.compact(title).length > 0)
             .map(title => `"${Parser.spaced(title)}"`)
