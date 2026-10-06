@@ -25,12 +25,14 @@ class API {
     }
 
     static async fetchData(query, extensionOpts) {
+        const apiUrl = extensionOpts.apiUrl.replace(/\/+$/, "")
+
         const headers = {
             "Content-Type": "application/json",
             "X-API-Key": extensionOpts.apiKey || ""
         }
 
-        const res = await fetch(`${extensionOpts.apiUrl}/api/search`, {
+        const res = await fetch(`${apiUrl}/api/search`, {
             method: "POST",
             headers,
             body: JSON.stringify({ term: query, pageSize: 100, filter: this._FILTER_VALUES[extensionOpts.filter] ?? 2 }),
