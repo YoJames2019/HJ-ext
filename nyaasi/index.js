@@ -72,7 +72,9 @@ export default new class NyaapiExtension {
 
         if(!str1 || !str2) return { JWScore: 0, contained: false};
 
-        const contained = str1.includes(str2) || str2.includes(str1)
+        const contained = 
+            Math.min(str1.length, str2.length) >= 8 &&
+            (str1.includes(str2) || str2.includes(str1))
 
         return {JWScore: Scoring.jaroWinkler(str1, str2), contained}
     }

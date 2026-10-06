@@ -289,7 +289,7 @@ var index_default = new class NyaapiExtension {
     const str1 = parsing_default.compact(variant);
     const str2 = parsing_default.compact(parsing_default.extractReleaseTitle(name));
     if (!str1 || !str2) return { JWScore: 0, contained: false };
-    const contained = str1.includes(str2) || str2.includes(str1);
+    const contained = Math.min(str1.length, str2.length) >= 8 && (str1.includes(str2) || str2.includes(str1));
     return { JWScore: scoring_default.jaroWinkler(str1, str2), contained };
   }
   map(data) {
