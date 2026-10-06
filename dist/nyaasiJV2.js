@@ -76,12 +76,15 @@ var Parser = class {
     if (match = SEASON_WORD.exec(text)) return Number(match[1]);
     if (match = SEASON_ORDINAL.exec(text)) return Number(match[1]);
     if (match = SEASON_PREFIX.exec(text)) return Number(match[1]);
-    const head = text.split(/\s*[:–—]\s+|\s+-\s+/)[0];
-    const words = head.split(/\s+/).filter(Boolean);
-    const last = words.pop();
-    const previous = words.pop();
-    if (previous === "part" || previous === "cour") return null;
-    return last ? this.romanSeason(last) : null;
+    for (const part of [text, text.split(/\s*[:–—]\s+|\s+-\s+/)[0]]) {
+      const words = part.split(/\s+/).filter(Boolean);
+      const last = words.pop();
+      const previous = words.pop();
+      if (previous === "part" || previous === "cour") continue;
+      const season = last ? this.romanSeason(last) : null;
+      if (season) return season;
+    }
+    return null;
   }
   static parsePart(title) {
     const PART_REGEX = /\b(?:cour|part)\s*(\d{1,2})\b/;
