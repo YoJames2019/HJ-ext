@@ -67,7 +67,7 @@ class Parser {
 
     static parseSeason(title) {
         const text = this.canon(title)
-        
+
         const SEASON_WORD = /\bseason\s*(\d{1,2})\b/;
         const SEASON_ORDINAL = /\b(\d{1,2})(?:st|nd|rd|th)\s+season\b/;
         const SEASON_PREFIX = /\bs(\d{1,2})\b/;
@@ -131,6 +131,14 @@ class Parser {
         const match = /^([\d.]+)\s*([A-Za-z]+)$/.exec(String(value).trim());
         if (!match) return 0;
         return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));
+    }
+
+    static findWantedSeason(titles) {
+        for (const title of titles) {
+            const season = this.parseSeason(title)
+            if (season) return season
+        }
+        return null
     }
 }
 

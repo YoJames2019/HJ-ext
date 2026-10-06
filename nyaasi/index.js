@@ -37,13 +37,7 @@ export default new class NyaapiExtension {
 
         let wantedSeason = 1;
         if(episodic){
-            for (let title of titles) {
-                let season = Parser.parseSeason(title)
-                if (season) {
-                    wantedSeason = season
-                    break;
-                }
-            }
+            wantedSeason = Parser.findWantedSeason(titles)
         }
 
         for (let index in results) {

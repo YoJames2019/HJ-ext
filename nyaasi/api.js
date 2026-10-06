@@ -65,16 +65,22 @@ class API {
         .map(v => `"${Parser.spaced(v)}"`)
         
         queryParts.push(titleVariants.join("|"))
-        
+
         if(episode != null && episode != undefined){
             const paddedEpisode = String(episode).padStart(2, "0")
-    
+            const wantedSeason = Parser.findWantedSeason(titles)
+
+            const seasonNum = wantedSeason ?? 1
+            const paddedSeason = String(seasonNum).padStart(2, "0")
+
             const episodeVariants = [...new Set([
                 `${paddedEpisode}`,
                 `e${paddedEpisode}`,
                 `e${episode}`,
                 `ep${paddedEpisode}`,
-                `ep${episode}`
+                `ep${episode}`,
+                `s${paddedSeason}e${paddedEpisode}`,
+                `s${seasonNum}e${paddedEpisode}`
             ])]
 
             queryParts.push(`(${episodeVariants.join("|")})`)

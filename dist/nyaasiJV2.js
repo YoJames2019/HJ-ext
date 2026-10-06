@@ -127,6 +127,13 @@ var Parser = class {
     if (!match) return 0;
     return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));
   }
+  static findWantedSeason(titles) {
+    for (const title of titles) {
+      const season = this.parseSeason(title);
+      if (season) return season;
+    }
+    return null;
+  }
 };
 var parsing_default = Parser;
 
@@ -172,12 +179,17 @@ var API = class {
     queryParts.push(titleVariants.join("|"));
     if (episode != null && episode != void 0) {
       const paddedEpisode = String(episode).padStart(2, "0");
+      const wantedSeason = parsing_default.findWantedSeason(titles);
+      const seasonNum = wantedSeason ?? 1;
+      const paddedSeason = String(seasonNum).padStart(2, "0");
       const episodeVariants = [.../* @__PURE__ */ new Set([
         `${paddedEpisode}`,
         `e${paddedEpisode}`,
         `e${episode}`,
         `ep${paddedEpisode}`,
-        `ep${episode}`
+        `ep${episode}`,
+        `s${paddedSeason}e${paddedEpisode}`,
+        `s${seasonNum}e${paddedEpisode}`
       ])];
       queryParts.push(`(${episodeVariants.join("|")})`);
     }
@@ -262,13 +274,7 @@ var index_default = new class NyaapiExtension {
   scoreResults(results, titles, wantedEpisode, episodic) {
     let wantedSeason = 1;
     if (episodic) {
-      for (let title of titles) {
-        let season = parsing_default.parseSeason(title);
-        if (season) {
-          wantedSeason = season;
-          break;
-        }
-      }
+      wantedSeason = parsing_default.findWantedSeason(titles);
     }
     for (let index in results) {
       let result = results[index];
