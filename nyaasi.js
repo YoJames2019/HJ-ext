@@ -130,7 +130,7 @@ export default new class ApiClient {
       }
     }
 
-    const seasonNumberRegex = /\{num(?:pad(?<padAmount>\d+))?\}/g
+    const seasonNumberRegex = /\{num(?:pad(\d+))?\}/g
     for (const title of processTitles) {
       for (const variationTemplate of seasonVariations) {
 
