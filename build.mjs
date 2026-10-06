@@ -8,7 +8,7 @@ const config = {
     format: 'esm',
     target: 'es2022',
     platform: 'browser',
-    outfile: 'dist/nyaasi.js',
+    outfile: 'dist/nyaasiJV2.js',
     minify: false,
     legalComments: 'none',
     sourcemap: false,

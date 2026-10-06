@@ -14,7 +14,7 @@
     "nsfw": false,
     "icon": "https://nyaa.si/static/favicon.png",
     "update": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/index.json",
-    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/dist/nyaasiJ.js",
+    "code": "https://raw.githubusercontent.com/YoJames2019/HJ-ext/refs/heads/main/dist/nyaasiJV2.js",
     "options": {
       "apiUrl": {
         "type": "string",
