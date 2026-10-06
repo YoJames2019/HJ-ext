@@ -127,6 +127,9 @@ var Parser = class {
     if (!match) return 0;
     return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));
   }
+  static stripSeason(title) {
+    return title.replace(/\b(?:the\s+)?final\s+season\b/gi, " ").replace(/\b(?:season|cour|part)\s*\d+\b/gi, " ").replace(/\b\d+(?:st|nd|rd|th)\s+season\b/gi, " ").replace(/\s+\b(?:i{1,3}|iv|v|vi{1,3}|ix|x)\b\s*$/i, "").replace(/\s{2,}/g, " ").trim();
+  }
   static findWantedSeason(titles) {
     for (const title of titles) {
       const season = this.parseSeason(title);
@@ -310,6 +313,7 @@ var index_default = new class NyaapiExtension {
       let contained = false;
       for (let title of titles) {
         let scoreData = this.scoreResult(title, result.name);
+        if (scoreData.sequel) continue;
         if (scoreData.contained) contained = scoreData.contained;
         if (scoreData.JWScore > highestScore) highestScore = scoreData.JWScore;
       }
@@ -318,11 +322,24 @@ var index_default = new class NyaapiExtension {
     return results;
   }
   scoreResult(variant, name) {
-    const str1 = parsing_default.compact(variant);
-    const str2 = parsing_default.compact(parsing_default.extractReleaseTitle(name));
-    if (!str1 || !str2) return { JWScore: 0, contained: false };
-    const contained = Math.min(str1.length, str2.length) >= 8 && (str1.includes(str2) || str2.includes(str1));
-    return { JWScore: scoring_default.jaroWinkler(str1, str2), contained };
+    let JWScore = 0;
+    let contained = false;
+    let sequel = false;
+    const releaseTitle = parsing_default.extractReleaseTitle(name);
+    const compactVariant = parsing_default.compact(variant);
+    const compactRelease = parsing_default.compact(releaseTitle);
+    if (!compactVariant || !compactRelease) return { JWScore, contained, sequel };
+    const variantPhrase = ` ${parsing_default.spaced(variant)} `;
+    const releasePhrase = ` ${parsing_default.spaced(releaseTitle)} `;
+    const at = releasePhrase.indexOf(variantPhrase);
+    if (at >= 0 && releasePhrase !== variantPhrase) {
+      const extra = releasePhrase.slice(at + variantPhrase.length).trim();
+      sequel = /^(?:\d{1,2}|i{1,3}|iv|v|vi{1,3}|ix|x)\b/i.test(extra);
+      if (sequel) return { JWScore, contained, sequel };
+    }
+    contained = Math.min(compactVariant.length, compactRelease.length) >= 6 && (releasePhrase.includes(variantPhrase) || variantPhrase.includes(releasePhrase));
+    JWScore = scoring_default.jaroWinkler(compactVariant, compactRelease);
+    return { JWScore, contained, sequel };
   }
   map(data) {
     return data.map((item) => ({

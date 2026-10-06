@@ -12,11 +12,11 @@ export default new class NyaapiExtension {
         if (!media?.title) return []
 
         const titles = [
-            ...new Set(Object.values(media.title ?? {}).filter(t => !!t)), 
+            ...new Set(Object.values(media.title ?? {}).filter(t => !!t)),
             ...(media.synonyms ?? [])
         ].filter(t => t && /^[\x20-\x7E]*$/.test(Parser.canon(t)))
 
-        if(titles.length < 1) return []
+        if (titles.length < 1) return []
 
         let results = await API.findTorrentResults(titles, episode, exclusions, options)
 
@@ -36,7 +36,7 @@ export default new class NyaapiExtension {
     scoreResults(results, titles, wantedEpisode, episodic) {
 
         let wantedSeason = 1;
-        if(episodic){
+        if (episodic) {
             wantedSeason = Parser.findWantedSeason(titles)
         }
 
@@ -59,7 +59,8 @@ export default new class NyaapiExtension {
             let contained = false;
             for (let title of titles) {
                 let scoreData = this.scoreResult(title, result.name)
-                if(scoreData.contained) contained = scoreData.contained
+                if (scoreData.sequel) continue;
+                if (scoreData.contained) contained = scoreData.contained
                 if (scoreData.JWScore > highestScore) highestScore = scoreData.JWScore
             }
 
@@ -70,16 +71,36 @@ export default new class NyaapiExtension {
     }
 
     scoreResult(variant, name) {
-        const str1 = Parser.compact(variant)
-        const str2 = Parser.compact(Parser.extractReleaseTitle(name))
 
-        if(!str1 || !str2) return { JWScore: 0, contained: false};
+        let JWScore = 0;
+        let contained = false;
+        let sequel = false;
 
-        const contained = 
-            Math.min(str1.length, str2.length) >= 8 &&
-            (str1.includes(str2) || str2.includes(str1))
+        const releaseTitle = Parser.extractReleaseTitle(name)
+        const compactVariant = Parser.compact(variant)
+        const compactRelease = Parser.compact(releaseTitle)
 
-        return {JWScore: Scoring.jaroWinkler(str1, str2), contained}
+        if (!compactVariant || !compactRelease) return { JWScore, contained, sequel };
+
+        const variantPhrase = ` ${Parser.spaced(variant)} `
+        const releasePhrase = ` ${Parser.spaced(releaseTitle)} `
+
+        const at = releasePhrase.indexOf(variantPhrase)
+        if (at >= 0 && releasePhrase !== variantPhrase) {
+            const extra = releasePhrase.slice(at + variantPhrase.length).trim()
+
+            sequel = /^(?:\d{1,2}|i{1,3}|iv|v|vi{1,3}|ix|x)\b/i.test(extra)
+            if (sequel) return { JWScore, contained, sequel }
+        }
+
+
+        contained =
+            Math.min(compactVariant.length, compactRelease.length) >= 6 &&
+            (releasePhrase.includes(variantPhrase) || variantPhrase.includes(releasePhrase))
+
+        JWScore = Scoring.jaroWinkler(compactVariant, compactRelease)
+
+        return { JWScore, contained, sequel }
     }
 
     map(data) {

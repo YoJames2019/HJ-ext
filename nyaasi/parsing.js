@@ -132,6 +132,16 @@ class Parser {
         if (!match) return 0;
         return Math.round(parseFloat(match[1]) * (SIZE_UNITS[match[2]] ?? 0));
     }
+    
+    static stripSeason(title) {
+        return title
+            .replace(/\b(?:the\s+)?final\s+season\b/gi, " ")
+            .replace(/\b(?:season|cour|part)\s*\d+\b/gi, " ")
+            .replace(/\b\d+(?:st|nd|rd|th)\s+season\b/gi, " ")
+            .replace(/\s+\b(?:i{1,3}|iv|v|vi{1,3}|ix|x)\b\s*$/i, "")
+            .replace(/\s{2,}/g, " ")
+            .trim()
+    }
 
     static findWantedSeason(titles) {
         for (const title of titles) {
