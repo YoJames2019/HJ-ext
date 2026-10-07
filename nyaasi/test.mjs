@@ -14,7 +14,7 @@
  * Run `npm run build` first; the suite does not build anything itself.
  *
  * ---------------------------------------------------------------------------
- * ADDING A CASE: append to CASES below.
+ * ADDING A CASE: add an object to cases.json (next to this file).
  *
  *   name          label shown in the output
  *   id | search   AniList media id, OR a search string resolved to the top match
@@ -29,7 +29,11 @@
  *   titleLike     RegExp the resolved AniList title must match, tested against every
  *                 title variant (romaji / english / native) so it doesn't matter which
  *                 one you quote
+ *   note          free text, ignored; use it to explain why the case exists
  *   skip          true to disable the case
+ *
+ * RegExp fields are JSON strings, e.g. "/part\\s*2/i".
+ * Override the file with --cases <path>.
  * ---------------------------------------------------------------------------
  */
 
@@ -49,44 +53,28 @@ const CONFIG = {
   only: (arg('only') ?? '').toLowerCase(),
   entry: path.resolve(HERE, arg('entry') ?? '../dist/nyaasiJV2.js'),
   parser: path.resolve(HERE, arg('parser') ?? 'parsing.js'),
+  cases: path.resolve(HERE, arg('cases') ?? 'cases.json'),
 }
 
 // ---------------------------------------------------------------------------
 // CASES
 // ---------------------------------------------------------------------------
-const CASES = [
-  // currently airing
-  { name: 'One Piece ep latest',          search: 'One Piece', episode: 'latest', titleLike: /one piece/i },
-  { name: 'Bleach TYBW ep 6',             search: 'Bleach Thousand-Year Blood War', episode: 6, titleLike: /bleach/i },
-  { name: 'Apothecary Diaries ep 4',      search: 'Kusuriya no Hitorigoto', episode: 4, titleLike: /kusuriya|apothecary/i },
+// regexes live in cases.json as strings, e.g. "/part\\s*2/i"
+const asRegExp = value => {
+  if (typeof value !== 'string') return value
+  const m = /^\/(.*)\/([a-z]*)$/.exec(value)
+  return m ? new RegExp(m[1], m[2]) : new RegExp(value)
+}
+const REGEX_KEYS = ['titleLike', 'topLike', 'topNotLike', 'forbid']
+const compileCase = c => {
+  const out = { ...c }
+  for (const key of REGEX_KEYS) {
+    if (key in out) out[key] = Array.isArray(out[key]) ? out[key].map(asRegExp) : asRegExp(out[key])
+  }
+  return out
+}
 
-  // recently finished
-  { name: 'Frieren ep 12',                id: 154587, episode: 12 },
-  { name: 'Mushoku Tensei S2 ep 3',       search: 'Mushoku Tensei II', episode: 3, titleLike: /mushoku/i },
-  { name: 'Dungeon Meshi ep 10',          search: 'Dungeon Meshi', episode: 10, titleLike: /dungeon meshi/i },
-
-  // sequels and parts (the season/part logic)
-  { name: 'Slime S2 Part 2 ep 2',         id: 116742, episode: 2, topLike: /part\s*2/i, forbid: /\bS0?2E0?2\b/i },
-  { name: 'Spy x Family S1 ep 1',         id: 140960, episode: 1, forbid: /cour\s*2|part\s*2/i },
-  { name: 'Spy x Family Cour 2 ep 1',     id: 142838, episode: 1, forbid: /\bS0?1E\d{1,3}\b/i },
-  { name: 'Overlord IV ep 1',             search: 'Overlord IV', episode: 1, titleLike: /overlord/i },
-  { name: 'Steins;Gate ep 24',            id: 9253, episode: 24 },
-  // Clevatess S2 releases never spell the subtitle, only "Clevatess II"
-  { name: 'Clevatess S2 ep 1',            id: 198946, episode: 1 },
-  // Mahou Yome OVA: season 1 batches (" - 01 ~ 24") must not read as episode 1
-  { name: 'Mahou Yome OVA ep 1',          id: 130713, episode: 1, topLike: /nishi no shounen/i, forbid: /\d{1,4}\s*[~-]\s*\d{1,4}/ },
-  // Cyberpunk Edgerunners 2 is not out; must not fall back to season 1
-  { name: 'Cyberpunk Edgerunners 2 ep 1', id: 195539, episode: 1, expectEmpty: true },
-
-  // old
-  { name: 'Cowboy Bebop ep 5',            id: 1, episode: 5 },
-  { name: 'Death Note ep 1',              search: 'Death Note', episode: 1, titleLike: /death note/i },
-  { name: 'Fullmetal Alchemist BH ep 34', search: 'Fullmetal Alchemist: Brotherhood', episode: 34, titleLike: /fullmetal/i },
-
-  // movies (no episode; the top result should parse to none)
-  { name: 'Your Name (movie)',            id: 21519, episode: 1, expectEpisode: null, forbid: /\bS\d{1,2}E\d{1,3}\b/i },
-  { name: 'Slime movie (Tears)',          id: 182206, episode: 1, expectEpisode: null, forbid: /2nd season\s*-\s*\d|\bS\d{1,2}E\d{1,3}\b/i },
-]
+const CASES = JSON.parse(fs.readFileSync(CONFIG.cases, 'utf8')).map(compileCase)
 
 // ---------------------------------------------------------------------------
 // loading

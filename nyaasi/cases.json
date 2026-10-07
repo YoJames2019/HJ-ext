@@ -1,0 +1,50 @@
+[
+    { "name": "One Piece ep latest", "search": "One Piece", "episode": "latest", "titleLike": "/one piece/i", "note": "currently airing" },
+    { "name": "Bleach TYBW ep 6", "search": "Bleach Thousand-Year Blood War", "episode": 6, "titleLike": "/bleach/i" },
+    { "name": "Apothecary Diaries ep 4", "search": "Kusuriya no Hitorigoto", "episode": 4, "titleLike": "/kusuriya|apothecary/i" },
+    { "name": "Frieren ep 12", "id": 154587, "episode": 12, "note": "recently finished" },
+    { "name": "Mushoku Tensei S2 ep 3", "search": "Mushoku Tensei II", "episode": 3, "titleLike": "/mushoku/i" },
+    { "name": "Dungeon Meshi ep 10", "search": "Dungeon Meshi", "episode": 10, "titleLike": "/dungeon meshi/i" },
+    {
+        "name": "Slime S2 Part 2 ep 2",
+        "id": 116742,
+        "episode": 2,
+        "topLike": "/part\\s*2/i",
+        "forbid": "/\\bS0?2E0?2\\b/i",
+        "note": "part gate: part 1 releases must not match"
+    },
+    { "name": "Spy x Family S1 ep 1", "id": 140960, "episode": 1, "forbid": "/cour\\s*2|part\\s*2/i" },
+    { "name": "Spy x Family Cour 2 ep 1", "id": 142838, "episode": 1, "forbid": "/\\bS0?1E\\d{1,3}\\b/i" },
+    { "name": "Overlord IV ep 1", "search": "Overlord IV", "episode": 1, "titleLike": "/overlord/i" },
+    { "name": "Steins;Gate ep 24", "id": 9253, "episode": 24, "note": "sequel guard: Steins;Gate 0 must not match" },
+    { "name": "Clevatess S2 ep 1", "id": 198946, "episode": 1, "note": "Clevatess S2 releases never spell the subtitle, only \"Clevatess II\"" },
+    {
+        "name": "Mahou Yome OVA ep 1",
+        "id": 130713,
+        "episode": 1,
+        "topLike": "/nishi no shounen/i",
+        "forbid": "/\\d{1,4}\\s*[~-]\\s*\\d{1,4}/",
+        "note": "season 1 batches (\" - 01 ~ 24\") must not read as episode 1"
+    },
+    { "name": "Cyberpunk Edgerunners 2 ep 1", "id": 195539, "episode": 1, "expectEmpty": true, "note": "not yet released; must not fall back to season 1" },
+    { "name": "Tensei Goblin ep 1", "id": 209219, "episode": 1, "note": "ONA with unknown episode count (episodes: null)" },
+    {
+        "name": "Returner Magic S2 ep 1",
+        "id": 172192,
+        "episode": 1,
+        "topLike": "/toonshub/i",
+        "note": "apostrophe in \"Returner's\": dual-audio release must not lose to the dub"
+    },
+    { "name": "Cowboy Bebop ep 5", "id": 1, "episode": 5, "note": "old" },
+    { "name": "Death Note ep 1", "search": "Death Note", "episode": 1, "titleLike": "/death note/i" },
+    { "name": "Fullmetal Alchemist BH ep 34", "search": "Fullmetal Alchemist: Brotherhood", "episode": 34, "titleLike": "/fullmetal/i" },
+    {
+        "name": "Your Name (movie)",
+        "id": 21519,
+        "episode": 1,
+        "expectEpisode": null,
+        "forbid": "/\\bS\\d{1,2}E\\d{1,3}\\b/i",
+        "note": "movies: no episode, top result must parse to none"
+    },
+    { "name": "Slime movie (Tears)", "id": 182206, "episode": 1, "expectEpisode": null, "forbid": "/2nd season\\s*-\\s*\\d|\\bS\\d{1,2}E\\d{1,3}\\b/i" }
+]
