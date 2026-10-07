@@ -6,7 +6,7 @@ class Parser {
     ];
 
 
-    static canon = (str) => str.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase()
+    static canon = (str) => str.normalize("NFKD").replace(/\p{M}/gu, "").replace(/['’`]/g, "").toLowerCase()
     static compact = (str) => this.canon(str).replace(/[^a-z0-9]+/g, "");
     static spaced = (str) => this.canon(str).replace(/[^a-z0-9]+/g, " ").trim();
 
